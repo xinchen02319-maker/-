@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>每食记</title>
+<style>
+:root{
+  --bg:#fff7ed;--card:#ffffffdd;--text:#24150f;--muted:#7c6a5e;--line:#ead8c8;
+  --main:#ea580c;--main2:#db2777;--soft:#ffedd5;--danger:#dc2626;
+  --shadow:0 18px 45px rgba(67,35,16,.12)
+}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;color:var(--text);background:radial-gradient(circle at 10% 8%,rgba(234,88,12,.18),transparent 30%),radial-gradient(circle at 92% 12%,rgba(219,39,119,.14),transparent 32%),var(--bg)}
+.app{max-width:1180px;margin:auto;padding:30px 16px 52px}
+header{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+h1{margin:0 0 8px;font-size:clamp(32px,5vw,54px);letter-spacing:-.06em;line-height:1.05}
+.sub{margin:0;color:var(--muted);line-height:1.8}
+.badge{padding:10px 14px;border-radius:999px;background:#fff9;border:1px solid #fff;box-shadow:var(--shadow);font-size:13px;color:#6b4b3c}
+.grid{display:grid;grid-template-columns:390px 1fr;gap:18px;align-items:start}
+.card{background:var(--card);border:1px solid #ffffffdd;border-radius:24px;box-shadow:var(--shadow);backdrop-filter:blur(14px)}
+.form-card{padding:22px;position:sticky;top:16px}
+.list-card,.random-card{padding:22px}
+.random-card{margin-bottom:18px;background:linear-gradient(135deg,rgba(255,255,255,.9),rgba(255,237,213,.86))}
+h2{margin:0 0 14px;font-size:21px;letter-spacing:-.03em}
+label{display:block;margin:12px 0 7px;color:#4d372c;font-size:13px;font-weight:800}
+input,select,textarea{width:100%;border:1px solid var(--line);border-radius:15px;padding:12px 13px;background:#fffdf9;color:var(--text);font:inherit;outline:none}
+input[type=file]{padding:10px;background:#fffaf5}
+textarea{resize:vertical;min-height:78px;line-height:1.6}
+input:focus,select:focus,textarea:focus{border-color:rgba(234,88,12,.55);box-shadow:0 0 0 4px rgba(234,88,12,.10)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+button{border:0;border-radius:15px;padding:11px 13px;font:inherit;font-weight:850;cursor:pointer}
+button:active{transform:translateY(1px)}
+.primary{color:white;background:linear-gradient(135deg,var(--main),var(--main2));box-shadow:0 12px 26px rgba(234,88,12,.22)}
+.secondary{background:#f3e6db;color:#4d372c}
+.ghost{background:#fff9;border:1px solid var(--line);color:#4d372c}
+.danger{background:#fff1f2;color:var(--danger)}
+.hint{margin:10px 0 0;color:var(--muted);font-size:12px;line-height:1.7}
+.preview{display:none;margin-top:10px;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#fffaf5}
+.preview.show{display:block}
+.preview img{display:block;width:100%;max-height:250px;object-fit:cover}
+.preview-actions{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 10px;color:var(--muted);font-size:12px}
+.random-result{display:none;margin-top:14px;padding:16px;border-radius:20px;background:#fffaf5;border:1px solid var(--line)}
+.random-result.show{display:block}
+.random-result img{width:100%;max-height:260px;object-fit:cover;border-radius:16px;margin-bottom:12px}
+.random-name{font-size:26px;font-weight:950;letter-spacing:-.04em;margin-bottom:6px}
+.random-meta{color:var(--muted);line-height:1.7;font-size:14px}
+.tools{display:grid;grid-template-columns:1fr 115px 115px 130px;gap:10px;margin:14px 0}
+.records{display:grid;gap:12px}
+.item{display:grid;grid-template-columns:150px 1fr;gap:14px;padding:15px;border-radius:18px;background:#fff9;border:1px solid var(--line)}
+.photo{width:150px;height:150px;border-radius:16px;overflow:hidden;background:#fff1e6;border:1px solid var(--line);display:grid;place-items:center;color:#b45309;font-size:32px}
+.photo img{width:100%;height:100%;object-fit:cover;display:block}
+.item-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:10px}
+.food-name{font-size:18px;font-weight:950;letter-spacing:-.03em;margin-bottom:5px}
+.meta{color:var(--muted);font-size:13px;line-height:1.65}
+.cat{display:inline-flex;align-items:center;gap:5px;padding:5px 9px;border-radius:999px;background:var(--soft);color:#9a3412;font-size:12px;font-weight:850;white-space:nowrap}
+.note{white-space:pre-wrap;line-height:1.75;background:#fffaf5;border-radius:14px;padding:10px;margin-top:10px;color:#493429}
+.actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-top:10px}
+.actions button,.foot button{font-size:13px;padding:8px 10px;border-radius:12px}
+.empty{text-align:center;color:var(--muted);border:1px dashed #cfb7a4;border-radius:18px;padding:44px 18px;line-height:1.8;background:#fff8}
+.foot{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(18px);opacity:0;background:#24150fee;color:white;border-radius:999px;padding:11px 15px;transition:.18s;pointer-events:none;z-index:10}
+.toast.show{opacity:1;transform:translateX(-50%)}
+@media(max-width:930px){.grid{grid-template-columns:1fr}.form-card{position:static}}
+@media(max-width:700px){.two,.tools{grid-template-columns:1fr}.item{grid-template-columns:1fr}.photo{width:100%;height:220px}.item-top{flex-direction:column}}
+</style>
+</head>
+<body>
+<main class="app">
+<header>
+  <div>
+    <h1>每食记</h1>
+    <p class="sub">记录每一顿好吃的。纠结吃啥时，点一下“今天吃什么”。</p>
+  </div>
+  <div class="badge">本地保存 · 地点筛选 · 可加照片</div>
+</header>
+
+<section class="grid">
+<form class="card form-card" id="foodForm">
+<h2 id="formTitle">添加美食</h2>
+<input id="editId" type="hidden">
+
+<label for="foodName">美食名称</label>
+<input id="foodName" placeholder="例如：麻辣烫、寿司、酸奶碗、牛肉面" required>
+
+<div class="two">
+  <div>
+    <label for="category">分类</label>
+    <select id="category"><option>正餐</option><option>小吃</option><option>甜品</option><option>自制</option></select>
+  </div>
+  <div>
+    <label for="mood">喜欢程度</label>
+    <select id="mood"><option>★★★★★</option><option>★★★★☆</option><option>★★★☆☆</option><option>★★☆☆☆</option><option>★☆☆☆☆</option></select>
+  </div>
+</div>
+
+<label for="date">日期</label>
+<input id="date" type="date" required>
+
+<div class="two">
+  <div>
+    <label for="locationType">地点类型</label>
+    <select id="locationType"><option>学校</option><option>市区</option></select>
+  </div>
+  <div>
+    <label for="locationDetail">详细地址 / 店名</label>
+    <input id="locationDetail" placeholder="例如：一食堂、校门口、万达某店">
+  </div>
+</div>
+
+<label for="photoInput">照片</label>
+<input id="photoInput" type="file" accept="image/*">
+<div class="preview" id="photoPreview">
+  <img id="previewImg" alt="照片预览">
+  <div class="preview-actions">
+    <span id="photoState">已添加照片</span>
+    <button class="danger" type="button" id="removePhotoBtn">移除照片</button>
+  </div>
+</div>
+
+<label for="note">备注</label>
+<textarea id="note" placeholder="味道、价格、下次还想不想吃、适合什么心情……"></textarea>
+
+<div class="row">
+  <button class="primary" type="submit">保存记录</button>
+  <button class="secondary" type="button" id="resetBtn">清空</button>
+</div>
+<p class="hint">照片会压缩后保存在浏览器本地。记录很多照片时，建议偶尔导出数据备份。</p>
+</form>
+
+<section>
+<div class="card random-card">
+<h2>今天吃什么？</h2>
+<p class="sub">从你以前记录过的美食里随机抽一个，也可以按分类抽。</p>
+<div class="two">
+  <div>
+    <label for="randomCategory">随机分类</label>
+    <select id="randomCategory"><option>全部</option><option>正餐</option><option>小吃</option><option>甜品</option><option>自制</option></select>
+  </div>
+  <div>
+    <label>&nbsp;</label>
+    <button class="primary" type="button" id="randomBtn" style="width:100%">随机抽一个</button>
+  </div>
+</div>
+<div class="random-result" id="randomResult"></div>
+</div>
+
+<div class="card list-card">
+<h2>美食记录</h2>
+<div class="tools">
+  <input id="search" placeholder="搜索美食、地点、备注">
+  <select id="filterLocation"><option>全部地点</option><option>学校</option><option>市区</option></select>
+  <select id="filterCategory"><option>全部分类</option><option>正餐</option><option>小吃</option><option>甜品</option><option>自制</option></select>
+  <select id="sort"><option value="new">日期：新到旧</option><option value="old">日期：旧到新</option><option value="name">名称排序</option><option value="category">分类排序</option></select>
+</div>
+<div class="records" id="records"></div>
+<div class="foot">
+  <button class="ghost" type="button" id="exportBtn">导出数据</button>
+  <button class="ghost" type="button" id="importBtn">导入数据</button>
+  <button class="danger" type="button" id="clearAllBtn">清空全部</button>
+  <input id="importFile" type="file" accept="application/json" hidden>
+</div>
+</div>
+</section>
+</section>
+</main>
+
+<div class="toast" id="toast">已保存</div>
+
+<script>
+const KEY="food_diary_records_v3";
+const OLD_KEYS=["food_diary_records_v1"];
+const $=id=>document.getElementById(id);
+let photoData="";
+let records=loadRecords();
+
+function todayISO(){const n=new Date(),o=n.getTimezoneOffset()*60000;return new Date(n-o).toISOString().slice(0,10)}
+function nowTime(){const n=new Date();return String(n.getHours()).padStart(2,"0")+":"+String(n.getMinutes()).padStart(2,"0")}
+function id(){return Date.now().toString(36)+Math.random().toString(36).slice(2)}
+function esc(s){return String(s||"").replace(/[&<>'"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[m]))}
+function toast(t){$("toast").textContent=t;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),1400)}
+function saveRecords(){localStorage.setItem(KEY,JSON.stringify(records))}
+function normalizeCategory(c){if(["正餐","小吃","甜品","自制"].includes(c))return c;if(["早餐","午餐","晚餐","夜宵","外卖"].includes(c))return "正餐";if(["饮品","零食","水果"].includes(c))return "小吃";return c||"正餐"}
+function guessLocationType(t){return /校|食堂|宿舍|学院|图书馆|实验室|校园/.test(t||"")?"学校":"市区"}
+function normalizeRecord(r){r={...r};r.category=normalizeCategory(r.category);r.locationType=r.locationType||guessLocationType(r.place||r.locationDetail||"");r.locationDetail=r.locationDetail||r.place||"";r.photoData=r.photoData||"";return r}
+function loadRecords(){
+  try{
+    const now=JSON.parse(localStorage.getItem(KEY));
+    if(Array.isArray(now))return now.map(normalizeRecord);
+    for(const k of OLD_KEYS){
+      const old=JSON.parse(localStorage.getItem(k)||"[]");
+      if(Array.isArray(old)&&old.length)return old.map(normalizeRecord);
+    }
+    return [];
+  }catch{return[]}
+}
+function locationText(r){const type=r.locationType||guessLocationType(r.place||r.locationDetail||"");const detail=r.locationDetail||r.place||"";return detail?`${type} · ${detail}`:type}
+function dateValue(r){return new Date(`${r.date}T00:00`).getTime()}
+
+function setPhoto(data){
+  photoData=data||"";
+  if(photoData){
+    $("previewImg").src=photoData;
+    $("photoPreview").classList.add("show");
+  }else{
+    $("previewImg").removeAttribute("src");
+    $("photoPreview").classList.remove("show");
+    $("photoInput").value="";
+  }
+}
+
+function resizeImage(file,maxSize=1100,quality=.82){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const img=new Image();
+      img.onload=()=>{
+        let {width,height}=img;
+        const scale=Math.min(1,maxSize/Math.max(width,height));
+        width=Math.round(width*scale);height=Math.round(height*scale);
+        const canvas=document.createElement("canvas");
+        canvas.width=width;canvas.height=height;
+        const ctx=canvas.getContext("2d");
+        ctx.drawImage(img,0,0,width,height);
+        resolve(canvas.toDataURL("image/jpeg",quality));
+      };
+      img.onerror=reject;
+      img.src=e.target.result;
+    };
+    reader.onerror=reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+$("photoInput").addEventListener("change",async e=>{
+  const file=e.target.files[0];
+  if(!file)return;
+  if(!file.type.startsWith("image/")){alert("请选择图片文件。");return}
+  try{
+    $("photoState").textContent="正在处理照片……";
+    const data=await resizeImage(file);
+    setPhoto(data);
+    $("photoState").textContent="已添加照片";
+  }catch{
+    alert("照片读取失败，可以换一张试试。");
+  }
+});
+$("removePhotoBtn").onclick=()=>setPhoto("");
+
+function resetForm(){
+  $("editId").value="";
+  $("foodForm").reset();
+  $("date").value=todayISO();
+  $("category").value="正餐";
+  $("mood").value="★★★★★";
+  $("locationType").value="学校";
+  $("formTitle").textContent="添加美食";
+  setPhoto("");
+}
+
+function filteredRecords(){
+  const q=$("search").value.trim().toLowerCase();
+  const cat=$("filterCategory").value;
+  const loc=$("filterLocation").value;
+  let arr=records.filter(r=>{
+    const text=`${r.name} ${r.category} ${locationText(r)} ${r.note}`.toLowerCase();
+    const okSearch=text.includes(q);
+    const okCat=cat==="全部分类"||r.category===cat;
+    const okLoc=loc==="全部地点"||(r.locationType||guessLocationType(r.place||r.locationDetail||""))===loc;
+    return okSearch&&okCat&&okLoc;
+  });
+  const s=$("sort").value;
+  arr.sort((a,b)=>s==="new"?dateValue(b)-dateValue(a):s==="old"?dateValue(a)-dateValue(b):s==="name"?a.name.localeCompare(b.name,"zh-CN"):a.category.localeCompare(b.category,"zh-CN"));
+  return arr;
+}
+
+function render(){
+  const arr=filteredRecords();
+  if(!arr.length){
+    $("records").innerHTML='<div class="empty">还没有美食记录。<br>先在左边添加一条，之后就可以随机抽“今天吃什么”了。</div>';
+    return;
+  }
+  $("records").innerHTML=arr.map(r=>`
+    <article class="item">
+      <div class="photo">${r.photoData?`<img src="${r.photoData}" alt="${esc(r.name)}">`:"🍜"}</div>
+      <div>
+        <div class="item-top">
+          <div>
+            <div class="food-name">${esc(r.name)}</div>
+            <div class="meta">${esc(r.date)} · ${esc(locationText(r)||"未填写地点")} · ${esc(r.mood||"")}</div>
+          </div>
+          <div class="cat">🍽️ ${esc(r.category)}</div>
+        </div>
+        ${r.note?`<div class="note">${esc(r.note)}</div>`:""}
+        <div class="actions">
+          <button class="ghost" type="button" onclick="editRecord('${r.id}')">编辑</button>
+          <button class="danger" type="button" onclick="deleteRecord('${r.id}')">删除</button>
+        </div>
+      </div>
+    </article>
+  `).join("");
+}
+
+$("foodForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  const rec={
+    id:$("editId").value||id(),
+    name:$("foodName").value.trim(),
+    category:$("category").value,
+    mood:$("mood").value,
+    date:$("date").value,
+    locationType:$("locationType").value,
+    locationDetail:$("locationDetail").value.trim(),
+    place:$("locationDetail").value.trim(),
+    photoData,
+    note:$("note").value.trim(),
+    updatedAt:new Date().toISOString()
+  };
+  if(!rec.name||!rec.date){alert("美食名称和日期都要填。");return}
+  const idx=records.findIndex(r=>r.id===rec.id);
+  if(idx>=0)records[idx]=rec;else records.push(rec);
+  saveRecords();resetForm();render();toast("已保存美食记录");
+});
+
+window.editRecord=function(rid){
+  const r=records.find(x=>x.id===rid);if(!r)return;
+  $("editId").value=r.id;
+  $("foodName").value=r.name;
+  $("category").value=normalizeCategory(r.category);
+  $("mood").value=r.mood||"★★★★★";
+  $("date").value=r.date;
+  $("locationType").value=r.locationType||guessLocationType(r.place||r.locationDetail||"");
+  $("locationDetail").value=r.locationDetail||r.place||"";
+  $("note").value=r.note||"";
+  setPhoto(r.photoData||"");
+  $("formTitle").textContent="编辑美食";
+  scrollTo({top:0,behavior:"smooth"});
+}
+window.deleteRecord=function(rid){
+  const r=records.find(x=>x.id===rid);if(!r)return;
+  if(!confirm(`确定删除「${r.name}」吗？`))return;
+  records=records.filter(x=>x.id!==rid);
+  saveRecords();render();toast("已删除");
+}
+
+$("resetBtn").onclick=resetForm;
+$("search").oninput=render;
+$("filterLocation").onchange=render;
+$("filterCategory").onchange=render;
+$("sort").onchange=render;
+
+$("randomBtn").onclick=()=>{
+  const cat=$("randomCategory").value;
+  let pool=records.filter(r=>cat==="全部"||r.category===cat);
+  if(!pool.length){
+    $("randomResult").classList.add("show");
+    $("randomResult").innerHTML='<div class="random-name">还抽不出来</div><div class="random-meta">这个分类里还没有记录过美食。先添加几条再来抽。</div>';
+    return;
+  }
+  const byName=new Map();
+  pool.forEach(r=>{const k=r.name.trim().toLowerCase();if(!byName.has(k))byName.set(k,[]);byName.get(k).push(r)});
+  const groups=[...byName.values()],group=groups[Math.floor(Math.random()*groups.length)],pick=group[Math.floor(Math.random()*group.length)];
+  $("randomResult").classList.add("show");
+  $("randomResult").innerHTML=`
+    ${pick.photoData?`<img src="${pick.photoData}" alt="${esc(pick.name)}">`:""}
+    <div class="random-name">今天吃：${esc(pick.name)}</div>
+    <div class="random-meta">
+      分类：${esc(pick.category)} · 喜欢程度：${esc(pick.mood||"")}<br>
+      上次记录：${esc(pick.date)} ${locationText(pick)?`· ${esc(locationText(pick))}`:""}<br>
+      ${pick.note?`备注：${esc(pick.note)}`:""}
+    </div>`;
+};
+
+$("exportBtn").onclick=()=>{
+  const blob=new Blob([JSON.stringify({app:"每食记",version:4,records},null,2)],{type:"application/json"});
+  const a=document.createElement("a"),u=URL.createObjectURL(blob);
+  a.href=u;a.download=`meishiji-${todayISO()}.json`;a.click();URL.revokeObjectURL(u);
+};
+$("importBtn").onclick=()=>$("importFile").click();
+$("importFile").onchange=async ev=>{
+  const file=ev.target.files[0];if(!file)return;
+  try{
+    const json=JSON.parse(await file.text()),arr=Array.isArray(json)?json:json.records;
+    if(!Array.isArray(arr))throw 0;
+    const map=new Map(records.map(r=>[r.id,r]));
+    arr.forEach(r=>{
+      if(r.name){
+        const rid=r.id||id();
+        map.set(rid,normalizeRecord({
+          id:rid,
+          name:String(r.name),
+          category:r.category||"正餐",
+          mood:r.mood||"★★★★★",
+          date:r.date||todayISO(),
+          locationType:r.locationType||guessLocationType(r.place||r.locationDetail||""),
+          locationDetail:r.locationDetail||r.place||"",
+          place:r.locationDetail||r.place||"",
+          photoData:r.photoData||"",
+          note:r.note||"",
+          updatedAt:r.updatedAt||new Date().toISOString()
+        }));
+      }
+    });
+    records=[...map.values()];
+    saveRecords();render();toast("导入成功");
+  }catch{alert("导入失败：文件格式不对。")}
+  ev.target.value="";
+};
+$("clearAllBtn").onclick=()=>{
+  if(!records.length)return;
+  if(!confirm("确定清空全部美食记录吗？这个操作不能撤回。"))return;
+  records=[];saveRecords();render();toast("已清空全部记录");
+};
+
+resetForm();
+render();
+</script>
+</body>
+</html>
