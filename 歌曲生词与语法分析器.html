@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>歌曲生词与语法分析器</title>
+<style>
+:root{
+  --bg:#eef4ff;--card:#ffffffdd;--text:#142033;--muted:#667085;--line:#dbe3ef;
+  --main:#2563eb;--main2:#0f766e;--soft:#dbeafe;--warn:#f59e0b;--danger:#dc2626;
+  --shadow:0 18px 45px rgba(15,23,42,.09);--r:22px
+}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;color:var(--text);background:radial-gradient(circle at 10% 6%,rgba(37,99,235,.18),transparent 30%),radial-gradient(circle at 92% 16%,rgba(15,118,110,.16),transparent 30%),var(--bg)}
+.app{max-width:1240px;margin:auto;padding:28px 16px 52px}
+header{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+h1{margin:0 0 8px;font-size:clamp(30px,5vw,48px);letter-spacing:-.06em;line-height:1.05}
+.sub{margin:0;color:var(--muted);line-height:1.8}
+.badge{padding:10px 14px;border-radius:999px;background:#fff8;border:1px solid #fff;box-shadow:var(--shadow);font-size:13px;color:#475467}
+.grid{display:grid;grid-template-columns:420px 1fr;gap:18px;align-items:start}
+.card{background:var(--card);border:1px solid #ffffffcc;border-radius:var(--r);box-shadow:var(--shadow);backdrop-filter:blur(14px)}
+.panel{padding:20px;position:sticky;top:16px}
+.result{padding:20px}
+h2{margin:0 0 14px;font-size:20px;letter-spacing:-.03em}
+label{display:block;margin:12px 0 7px;color:#344054;font-size:13px;font-weight:800}
+input,select,textarea{width:100%;border:1px solid var(--line);border-radius:15px;padding:12px 13px;background:#fffefc;color:var(--text);font:inherit;outline:none}
+textarea{resize:vertical;min-height:250px;line-height:1.65}
+input:focus,select:focus,textarea:focus{border-color:rgba(37,99,235,.5);box-shadow:0 0 0 4px rgba(37,99,235,.1)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+button{border:0;border-radius:14px;padding:11px 13px;font:inherit;font-weight:800;cursor:pointer}
+button:active{transform:translateY(1px)}
+.primary{color:white;background:linear-gradient(135deg,var(--main),var(--main2));box-shadow:0 12px 28px rgba(37,99,235,.22)}
+.secondary{background:#eef2f7;color:#263244}
+.ghost{background:#fff;border:1px solid var(--line);color:#344054}
+.danger{background:#fff1f2;color:var(--danger)}
+.hint{margin:10px 0 0;color:var(--muted);font-size:12px;line-height:1.7}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.stat{padding:13px;border-radius:18px;background:#fff;border:1px solid var(--line)}
+.stat span{display:block;color:var(--muted);font-size:12px;margin-bottom:5px}
+.stat b{font-size:22px;letter-spacing:-.04em}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 14px}
+.tab{padding:9px 12px;border-radius:999px;background:#fff;border:1px solid var(--line);font-size:13px;font-weight:800;cursor:pointer;color:#475467}
+.tab.active{background:var(--soft);border-color:#93c5fd;color:#1d4ed8}
+.section{display:none}.section.show{display:block}
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:18px;background:#fff}
+table{width:100%;border-collapse:collapse;min-width:650px}
+th,td{padding:11px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;font-size:14px}
+th{background:#f8fafc;color:#475467;font-size:12px;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+.word{font-weight:900}
+.small{font-size:12px;color:var(--muted);line-height:1.55}
+.pill{display:inline-flex;padding:4px 8px;border-radius:999px;background:#eef2ff;color:#3730a3;font-size:12px;font-weight:800;margin:2px}
+.btn-small{font-size:12px;padding:7px 9px;border-radius:10px}
+.grammar-list{display:grid;gap:10px}
+.gcard{padding:14px;border:1px solid var(--line);border-radius:18px;background:#fff}
+.gtop{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+.gname{font-weight:900}
+.gtype{font-size:12px;color:#1d4ed8;background:#dbeafe;border-radius:999px;padding:4px 8px;font-weight:800}
+.example{margin:8px 0 0;padding:10px;border-radius:13px;background:#f8fafc;color:#344054;line-height:1.65}
+.line-list{display:grid;gap:8px}
+.line{padding:11px 12px;border:1px solid var(--line);border-radius:14px;background:#fff;line-height:1.7}
+.line-num{color:#98a2b3;font-size:12px;margin-right:8px;font-weight:800}
+.mark{background:#fef3c7;border-radius:6px;padding:1px 3px}
+.known-box{max-height:180px;overflow:auto;border:1px solid var(--line);border-radius:14px;background:#fff;padding:10px;line-height:1.8;font-size:13px}
+.empty{text-align:center;color:var(--muted);padding:48px 18px;border:1px dashed #b9c7dc;border-radius:18px;background:#fff8;line-height:1.8}
+.history-list{display:grid;gap:10px}
+.hist{padding:13px;border:1px solid var(--line);border-radius:16px;background:#fff}
+.hist-title{font-weight:900;margin-bottom:5px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(18px);opacity:0;background:#142033ee;color:white;border-radius:999px;padding:11px 15px;transition:.18s;pointer-events:none;z-index:10}
+.toast.show{opacity:1;transform:translateX(-50%)}
+@media(max-width:960px){.grid{grid-template-columns:1fr}.panel{position:static}.stats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.two,.stats{grid-template-columns:1fr}textarea{min-height:220px}}
+</style>
+</head>
+<body>
+<main class="app">
+<header>
+  <div>
+    <h1>歌曲生词与语法分析器</h1>
+    <p class="sub">把歌词粘进去，自动拆出生词候选、统计出现次数、定位行号，并识别常见日语 / 英语语法点。</p>
+  </div>
+  <div class="badge">本地运行 · 不上传歌词 · 可保存词库</div>
+</header>
+
+<section class="grid">
+  <aside class="card panel">
+    <h2>输入歌词</h2>
+    <div class="two">
+      <div>
+        <label for="title">歌曲名</label>
+        <input id="title" placeholder="例如：某首歌 / 某一段">
+      </div>
+      <div>
+        <label for="lang">语言</label>
+        <select id="lang">
+          <option value="auto">自动判断</option>
+          <option value="ja">日语</option>
+          <option value="en">英语</option>
+        </select>
+      </div>
+    </div>
+
+    <label for="lyrics">歌词文本</label>
+    <textarea id="lyrics" placeholder="把你要学的歌词粘到这里。建议一次放一首，或者先放一段。"></textarea>
+
+    <div class="row">
+      <button class="primary" id="analyze">开始分析</button>
+      <button class="secondary" id="sampleJa">试用日语样例</button>
+      <button class="secondary" id="sampleEn">试用英语样例</button>
+      <button class="ghost" id="clearInput">清空</button>
+    </div>
+
+    <p class="hint">说明：这是离线本地版，不接 AI 和词典 API。它更像“学习辅助扫描器”：先帮你找疑似生词和常见语法，再由你人工确认。</p>
+
+    <label for="knownInput">已掌握词库</label>
+    <textarea id="knownInput" style="min-height:95px" placeholder="每行一个词。分析时会自动排除这些词。"></textarea>
+    <div class="row">
+      <button class="ghost" id="saveKnown">保存词库</button>
+      <button class="ghost" id="exportKnown">导出词库</button>
+      <button class="danger" id="clearKnown">清空词库</button>
+    </div>
+    <p class="hint">你可以在生词表里点“已掌握”，以后这个词就不会再作为生词出现。</p>
+  </aside>
+
+  <section class="card result">
+    <div class="stats">
+      <div class="stat"><span>识别语言</span><b id="statLang">-</b></div>
+      <div class="stat"><span>歌词行数</span><b id="statLines">0</b></div>
+      <div class="stat"><span>生词候选</span><b id="statWords">0</b></div>
+      <div class="stat"><span>语法点</span><b id="statGrammar">0</b></div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" data-tab="vocab">生词候选</div>
+      <div class="tab" data-tab="grammar">语法点</div>
+      <div class="tab" data-tab="lines">逐行查看</div>
+      <div class="tab" data-tab="history">历史记录</div>
+    </div>
+
+    <div class="section show" id="sec-vocab">
+      <div id="vocabBox" class="empty">还没有分析结果。把歌词粘进去，然后点“开始分析”。</div>
+    </div>
+
+    <div class="section" id="sec-grammar">
+      <div id="grammarBox" class="empty">还没有语法结果。</div>
+    </div>
+
+    <div class="section" id="sec-lines">
+      <div id="linesBox" class="empty">还没有逐行结果。</div>
+    </div>
+
+    <div class="section" id="sec-history">
+      <div id="historyBox" class="empty">还没有历史记录。</div>
+    </div>
+
+    <div class="row">
+      <button class="ghost" id="exportReport">导出本次分析 CSV</button>
+      <button class="ghost" id="saveHistory">保存本次分析</button>
+    </div>
+  </section>
+</section>
+</main>
+<div class="toast" id="toast">已保存</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const KNOWN_KEY="song_analyzer_known_words_v1";
+const HISTORY_KEY="song_analyzer_history_v1";
+let lastResult=null;
+
+const commonEN=new Set(("a an the and or but if then else when while as of to in on at by for from with without into over under up down out off about after before again against between through during above below is am are was were be been being have has had do does did done can could will would shall should may might must i me my mine you your yours he him his she her hers it its we us our ours they them their theirs this that these those here there where what who whom whose which why how not no yes so very just too also really only still now than like all any some much many more most other another each every few own same such because until once".split(/\s+/)));
+const commonJA=new Set(("私 僕 俺 あなた 君 彼 彼女 これ それ あれ ここ そこ あそこ どこ 何 誰 いつ どう なぜ そして でも だけ から まで より へ と が を に で は も の か ね よ な さ だ です ます いる ある する した して なる なった ない いい そう この その あの どの ひと 人 もの こと 今日 明日 昨日 今 夢 愛 恋 心 空 夜 朝 涙 声 手 目 君 僕 私 世界 未来 過去 時間 風 雨 花 星 月 光 闇 道 街".split(/\s+/)));
+
+const grammarJA=[
+ {name:"ている / でいる",type:"状态/进行",re:/[てで]いる|[てで]いた|[てで]います/g,explain:"表示动作正在进行，或动作完成后留下的状态。歌词里常用来写“持续着的心情/状态”。"},
+ {name:"たい",type:"愿望",re:/[ぁ-んァ-ン一-龯]+たい/g,explain:"表示“想要做某事”。注意它通常接动词ます形词干。"},
+ {name:"ない / ぬ",type:"否定",re:/ない|なかった|ません|ぬ/g,explain:"表示否定。歌词里也常用于反复强调失去、不能、不会。"},
+ {name:"た / だった",type:"过去/完成",re:/だった|でした|かった|[いきぎしちにびみり]た/g,explain:"表示过去或完成。歌词里未必只是时间过去，也可能是情绪上的“已经发生”。"},
+ {name:"と思う / と言う",type:"引用/想法",re:/と思う|と思った|と言う|って言う|って/g,explain:"と/って可以引用话语、想法或判断。"},
+ {name:"から / ので",type:"原因",re:/から|ので/g,explain:"表示原因。“から”更口语直接，“ので”相对柔和。"},
+ {name:"のに / ても",type:"转折/让步",re:/のに|ても|でも/g,explain:"表示“明明……却……”或“即使……也……”，很适合写歌词里的矛盾感。"},
+ {name:"なら / ば / たら",type:"条件",re:/なら|れば|たら/g,explain:"表示条件：“如果……”。歌词里经常用于假设、后悔、愿望。"},
+ {name:"かもしれない",type:"推测",re:/かもしれない|かも/g,explain:"表示“也许、可能”。语气比断言弱。"},
+ {name:"でしょう / だろう",type:"推量",re:/でしょう|だろう/g,explain:"表示推测、确认或自言自语式判断。"},
+ {name:"なければ / なくちゃ",type:"必须",re:/なければ|なくちゃ|なきゃ/g,explain:"表示“必须……”。口语里常见“なきゃ/なくちゃ”。"},
+ {name:"てしまう / ちゃう",type:"完成/遗憾",re:/てしまう|でしまう|ちゃう|じゃう|しまった/g,explain:"表示做完，也常带有遗憾、失控、不可挽回的感觉。"},
+ {name:"てくれる / てもらう / てあげる",type:"授受",re:/てくれる|てもらう|てあげる|でくれる|でもらう|であげる/g,explain:"表示谁为谁做了某事，重点是人与人之间的方向感。"},
+ {name:"ように / ために",type:"目的",re:/ように|ために/g,explain:"表示目的。“ように”常接可能/状态，“ために”更偏主动目的。"},
+ {name:"そう / みたい",type:"样态/比况",re:/そうだ|そうな|みたい/g,explain:"表示“看起来像、似乎”。歌词里常用来写不确定的感受。"}
+];
+
+const grammarEN=[
+ {name:"Modal verbs",type:"情态动词",re:/\b(can|could|will|would|should|must|may|might|shall)\b/gi,explain:"表示能力、可能、意愿、建议或必要性。歌曲里常用来写愿望和假设。"},
+ {name:"Present perfect",type:"现在完成时",re:/\b(have|has)\s+\w+(ed|en)\b/gi,explain:"have/has + 过去分词，表示过去发生但影响延续到现在。"},
+ {name:"Past progressive",type:"过去进行时",re:/\b(was|were)\s+\w+ing\b/gi,explain:"was/were + doing，表示过去某一刻正在发生。"},
+ {name:"Negation",type:"否定",re:/\b(don't|doesn't|didn't|isn't|aren't|wasn't|weren't|can't|won't|wouldn't|shouldn't|not|never|no)\b/gi,explain:"否定结构。歌词中常用于拒绝、失去、决裂或自我保护。"},
+ {name:"Conditional if",type:"条件句",re:/\bif\b.+/gi,explain:"if 引导条件或假设。注意歌曲里常省略完整结构。"},
+ {name:"Relative clause",type:"定语从句",re:/\b(who|which|that|where)\b/gi,explain:"修饰前面的名词，补充说明“什么样的人/物/地方”。"},
+ {name:"Gerund",type:"动名词",re:/\b\w+ing\b/gi,explain:"-ing 可能是进行时，也可能作名词使用。需要结合前后文判断。"},
+ {name:"Infinitive",type:"不定式",re:/\bto\s+\w+\b/gi,explain:"to do 常表示目的、计划或倾向。"},
+ {name:"Comparative",type:"比较级",re:/\b\w+er\s+than\b|\bmore\s+\w+\s+than\b/gi,explain:"比较结构，表示“比……更……”。"},
+ {name:"Contractions",type:"缩写",re:/\b\w+'(m|re|s|ve|ll|d|t)\b/gi,explain:"口语缩写，歌曲里非常常见。先还原再理解会容易很多。"},
+ {name:"Phrasal-like verbs",type:"短语动词线索",re:/\b(get|give|go|come|take|put|turn|look|make|break|hold|let)\s+(up|out|in|on|off|away|back|down|over|through)\b/gi,explain:"动词 + 小品词，意思可能和原动词不同，需要作为整体记。"}
+];
+
+function toast(t){$("toast").textContent=t;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),1400)}
+function loadKnown(){try{return JSON.parse(localStorage.getItem(KNOWN_KEY))||[]}catch{return[]}}
+function saveKnown(arr){localStorage.setItem(KNOWN_KEY,JSON.stringify([...new Set(arr.map(x=>x.trim()).filter(Boolean))]))}
+function knownSet(){return new Set($("knownInput").value.split(/\n+/).map(x=>x.trim().toLowerCase()).filter(Boolean))}
+function loadHistory(){try{return JSON.parse(localStorage.getItem(HISTORY_KEY))||[]}catch{return[]}}
+function saveHistoryArr(arr){localStorage.setItem(HISTORY_KEY,JSON.stringify(arr))}
+function esc(s){return String(s||"").replace(/[&<>'"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[m]))}
+function detectLang(text,choice){
+ if(choice==="ja"||choice==="en")return choice;
+ return /[ぁ-んァ-ン一-龯]/.test(text)?"ja":"en";
+}
+function getLines(text){return text.split(/\r?\n/).map((t,i)=>({num:i+1,text:t.trim()})).filter(x=>x.text)}
+function normalizeEN(w){return w.toLowerCase().replace(/^'+|'+$/g,"")}
+function extractVocabEN(lines,known){
+ const map=new Map();
+ lines.forEach(line=>{
+  const words=line.text.match(/[A-Za-z]+(?:'[A-Za-z]+)?/g)||[];
+  words.forEach(raw=>{
+   let w=normalizeEN(raw);
+   if(w.length<3)return;
+   if(commonEN.has(w)||known.has(w))return;
+   if(/^\d+$/.test(w))return;
+   if(!map.has(w))map.set(w,{word:w,count:0,lines:new Set(),sample:line.text});
+   let item=map.get(w); item.count++; item.lines.add(line.num);
+  });
+ });
+ return [...map.values()].map(x=>({...x,lines:[...x.lines]})).sort((a,b)=>b.count-a.count||a.word.localeCompare(b.word));
+}
+function extractVocabJA(lines,known){
+ const map=new Map();
+ const re=/[一-龯々〆ヵヶ]+[ぁ-んァ-ヴー]*|[ァ-ヴー]{2,}|[ぁ-ん]{2,}/g;
+ lines.forEach(line=>{
+  const words=line.text.match(re)||[];
+  words.forEach(raw=>{
+   let w=raw.trim();
+   if(w.length<2)return;
+   if(commonJA.has(w)||known.has(w.toLowerCase()))return;
+   if(/^(から|まで|より|だけ|でも|なら|ので|のに|そして|それでも|だから|でした|ます|ない|する|した|いる|ある|なる)$/.test(w))return;
+   if(!map.has(w))map.set(w,{word:w,count:0,lines:new Set(),sample:line.text});
+   let item=map.get(w); item.count++; item.lines.add(line.num);
+  });
+ });
+ return [...map.values()].map(x=>({...x,lines:[...x.lines]})).sort((a,b)=>b.count-a.count||a.word.localeCompare(b.word,"ja"));
+}
+function findGrammar(lines,lang){
+ const bank=lang==="ja"?grammarJA:grammarEN;
+ const found=[];
+ bank.forEach(g=>{
+  const hits=[];
+  lines.forEach(line=>{
+   const matches=[...line.text.matchAll(g.re)].map(m=>m[0]);
+   if(matches.length)hits.push({line:line.num,text:line.text,matches:[...new Set(matches)]});
+  });
+  if(hits.length)found.push({...g,hits});
+ });
+ return found;
+}
+function highlightLine(text,vocab){
+ let out=esc(text);
+ vocab.slice(0,80).forEach(v=>{
+  const w=esc(v.word);
+  if(!w)return;
+  try{
+   const re=/[A-Za-z]/.test(v.word)?new RegExp("\\b"+w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"\\b","gi"):new RegExp(w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"g");
+   out=out.replace(re,m=>`<span class="mark">${m}</span>`);
+  }catch{}
+ });
+ return out;
+}
+function analyze(){
+ const text=$("lyrics").value.trim();
+ if(!text){alert("先粘贴歌词。");return}
+ const title=$("title").value.trim()||"未命名歌曲";
+ const lang=detectLang(text,$("lang").value);
+ const lines=getLines(text);
+ const known=knownSet();
+ const vocab=lang==="ja"?extractVocabJA(lines,known):extractVocabEN(lines,known);
+ const grammar=findGrammar(lines,lang);
+ lastResult={id:Date.now().toString(36),title,lang,lines,vocab,grammar,createdAt:new Date().toISOString()};
+ renderAll(lastResult);
+ toast("分析完成");
+}
+function renderAll(r){
+ $("statLang").textContent=r.lang==="ja"?"日语":"英语";
+ $("statLines").textContent=r.lines.length;
+ $("statWords").textContent=r.vocab.length;
+ $("statGrammar").textContent=r.grammar.length;
+ renderVocab(r);renderGrammar(r);renderLines(r);renderHistory();
+}
+function renderVocab(r){
+ if(!r.vocab.length){$("vocabBox").className="empty";$("vocabBox").innerHTML="没有明显生词候选。可以检查一下已掌握词库是不是加太多了。";return}
+ $("vocabBox").className="table-wrap";
+ $("vocabBox").innerHTML=`<table><thead><tr><th>生词候选</th><th>次数</th><th>出现行</th><th>样例行</th><th>操作</th></tr></thead><tbody>
+ ${r.vocab.map(v=>`<tr>
+  <td><span class="word">${esc(v.word)}</span></td>
+  <td>${v.count}</td>
+  <td>${v.lines.map(n=>`<span class="pill">L${n}</span>`).join("")}</td>
+  <td class="small">${esc(v.sample)}</td>
+  <td><button class="ghost btn-small" onclick="addKnown('${esc(v.word)}')">已掌握</button></td>
+ </tr>`).join("")}
+ </tbody></table>`;
+}
+function renderGrammar(r){
+ if(!r.grammar.length){$("grammarBox").className="empty";$("grammarBox").innerHTML="暂时没识别到常见语法点。";return}
+ $("grammarBox").className="grammar-list";
+ $("grammarBox").innerHTML=r.grammar.map(g=>`
+  <article class="gcard">
+    <div class="gtop"><div class="gname">${esc(g.name)}</div><div class="gtype">${esc(g.type)}</div></div>
+    <div class="small">${esc(g.explain)}</div>
+    ${g.hits.slice(0,4).map(h=>`<div class="example"><b>L${h.line}</b> · ${esc(h.text)}<br><span class="small">命中：${h.matches.map(m=>`<span class="pill">${esc(m)}</span>`).join("")}</span></div>`).join("")}
+  </article>
+ `).join("");
+}
+function renderLines(r){
+ if(!r.lines.length){$("linesBox").className="empty";$("linesBox").innerHTML="没有歌词行。";return}
+ $("linesBox").className="line-list";
+ $("linesBox").innerHTML=r.lines.map(l=>`<div class="line"><span class="line-num">L${l.num}</span>${highlightLine(l.text,r.vocab)}</div>`).join("");
+}
+window.addKnown=function(word){
+ const arr=$("knownInput").value.split(/\n+/).map(x=>x.trim()).filter(Boolean);
+ if(!arr.map(x=>x.toLowerCase()).includes(word.toLowerCase()))arr.push(word);
+ $("knownInput").value=arr.join("\n");
+ saveKnown(arr);
+ if(lastResult)analyze();
+ toast("已加入词库");
+}
+function renderHistory(){
+ const arr=loadHistory();
+ if(!arr.length){$("historyBox").className="empty";$("historyBox").innerHTML="还没有保存过分析记录。";return}
+ $("historyBox").className="history-list";
+ $("historyBox").innerHTML=arr.map(h=>`<div class="hist">
+  <div class="hist-title">${esc(h.title)}</div>
+  <div class="small">${new Date(h.createdAt).toLocaleString()} · ${h.lang==="ja"?"日语":"英语"} · ${h.lines.length} 行 · ${h.vocab.length} 个生词候选 · ${h.grammar.length} 个语法点</div>
+  <div class="row">
+    <button class="ghost btn-small" onclick="loadHist('${h.id}')">打开</button>
+    <button class="danger btn-small" onclick="delHist('${h.id}')">删除</button>
+  </div>
+ </div>`).join("");
+}
+window.loadHist=function(id){
+ const arr=loadHistory(); const h=arr.find(x=>x.id===id); if(!h)return;
+ lastResult=h; renderAll(h); showTab("vocab"); toast("已打开历史记录");
+}
+window.delHist=function(id){
+ let arr=loadHistory().filter(x=>x.id!==id); saveHistoryArr(arr); renderHistory(); toast("已删除");
+}
+function saveCurrentHistory(){
+ if(!lastResult){alert("还没有可保存的分析。");return}
+ let arr=loadHistory().filter(x=>x.id!==lastResult.id);
+ arr.unshift(lastResult);
+ arr=arr.slice(0,30);
+ saveHistoryArr(arr); renderHistory(); toast("已保存到历史");
+}
+function exportCSV(){
+ if(!lastResult){alert("还没有分析结果。");return}
+ const rows=[["type","item","count","lines","note"]];
+ lastResult.vocab.forEach(v=>rows.push(["vocab",v.word,v.count,v.lines.join("|"),v.sample]));
+ lastResult.grammar.forEach(g=>rows.push(["grammar",g.name,g.hits.length,g.hits.map(h=>"L"+h.line).join("|"),g.explain]));
+ const csv=rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n");
+ const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"});
+ const a=document.createElement("a"),u=URL.createObjectURL(blob);
+ a.href=u;a.download=(lastResult.title||"歌曲分析")+"_生词语法.csv";a.click();URL.revokeObjectURL(u);
+}
+function showTab(name){
+ document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.tab===name));
+ document.querySelectorAll(".section").forEach(s=>s.classList.remove("show"));
+ $("sec-"+name).classList.add("show");
+}
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>showTab(t.dataset.tab));
+$("analyze").onclick=analyze;
+$("saveHistory").onclick=saveCurrentHistory;
+$("exportReport").onclick=exportCSV;
+$("saveKnown").onclick=()=>{saveKnown($("knownInput").value.split(/\n+/));toast("词库已保存")};
+$("clearKnown").onclick=()=>{if(confirm("确定清空已掌握词库吗？")){$("knownInput").value="";saveKnown([]);toast("已清空词库")}};
+$("exportKnown").onclick=()=>{
+ const blob=new Blob([$("knownInput").value],{type:"text/plain;charset=utf-8"}),a=document.createElement("a"),u=URL.createObjectURL(blob);
+ a.href=u;a.download="已掌握词库.txt";a.click();URL.revokeObjectURL(u);
+};
+$("clearInput").onclick=()=>{$("lyrics").value="";$("title").value=""};
+$("sampleJa").onclick=()=>{
+ $("lang").value="ja";$("title").value="日语样例";
+ $("lyrics").value="夜の風に揺れている\n君の声を探していた\nもし明日が来ないなら\nこの手を離さないで";
+};
+$("sampleEn").onclick=()=>{
+ $("lang").value="en";$("title").value="English sample";
+ $("lyrics").value="I was walking through the city lights\nIf you could hear me now\nI would never let you go\nWe have been waiting for the morning";
+};
+
+$("knownInput").value=loadKnown().join("\n");
+renderHistory();
+</script>
+</body>
+</html>

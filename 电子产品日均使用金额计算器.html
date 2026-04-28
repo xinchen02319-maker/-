@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>电子产品日均使用金额计算器</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: rgba(255, 255, 255, 0.86);
+      --text: #172033;
+      --muted: #667085;
+      --line: #e4e7ec;
+      --primary: #2563eb;
+      --primary-soft: #dbeafe;
+      --danger: #ef4444;
+      --shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+      --radius: 22px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+        "Microsoft YaHei", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(59, 130, 246, 0.22), transparent 35%),
+        radial-gradient(circle at bottom right, rgba(20, 184, 166, 0.18), transparent 32%),
+        var(--bg);
+    }
+
+    .app {
+      width: min(1080px, 100%);
+      margin: 0 auto;
+      padding: 28px 16px 48px;
+    }
+
+    header {
+      margin-bottom: 22px;
+    }
+
+    .title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(28px, 4vw, 42px);
+      letter-spacing: -0.04em;
+      line-height: 1.05;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 13px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.7);
+      border: 1px solid rgba(255,255,255,0.9);
+      color: #475467;
+      font-size: 13px;
+      box-shadow: 0 8px 30px rgba(15, 23, 42, 0.06);
+      white-space: nowrap;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+      box-shadow: 0 0 0 5px rgba(34, 197, 94, 0.12);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,0.9);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+    }
+
+    .form-card {
+      padding: 20px;
+      position: sticky;
+      top: 16px;
+    }
+
+    .form-card h2,
+    .list-card h2 {
+      margin: 0 0 16px;
+      font-size: 18px;
+      letter-spacing: -0.02em;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 7px;
+      color: #344054;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.84);
+      border-radius: 14px;
+      padding: 12px 13px;
+      font: inherit;
+      color: var(--text);
+      outline: none;
+      transition: 0.18s ease;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: rgba(37, 99, 235, 0.55);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 72px;
+    }
+
+    .field {
+      margin-bottom: 13px;
+    }
+
+    .two {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 14px;
+      padding: 12px 14px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    .primary {
+      flex: 1;
+      color: white;
+      background: linear-gradient(135deg, #2563eb, #0f766e);
+      box-shadow: 0 12px 30px rgba(37, 99, 235, 0.25);
+    }
+
+    .secondary {
+      color: #1d2939;
+      background: #eef2f7;
+    }
+
+    .ghost {
+      color: #344054;
+      background: transparent;
+      border: 1px solid var(--line);
+    }
+
+    .danger {
+      color: var(--danger);
+      background: #fff1f2;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .summary-item {
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.66);
+      border: 1px solid rgba(255,255,255,0.88);
+    }
+
+    .summary-item .label {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+
+    .summary-item .value {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .list-card {
+      padding: 20px;
+      min-height: 420px;
+    }
+
+    .tools {
+      display: grid;
+      grid-template-columns: 1fr 150px;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .items {
+      display: grid;
+      gap: 12px;
+    }
+
+    .item {
+      padding: 15px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255,255,255,0.72);
+      display: grid;
+      gap: 12px;
+    }
+
+    .item-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .item-name {
+      font-size: 17px;
+      font-weight: 800;
+      margin-bottom: 5px;
+    }
+
+    .item-meta {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .price-pill {
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .daily {
+      color: var(--primary);
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+    }
+
+    .daily small {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .stat {
+      padding: 10px;
+      border-radius: 14px;
+      background: #f8fafc;
+      border: 1px solid #eef2f7;
+    }
+
+    .stat span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 3px;
+    }
+
+    .stat b {
+      font-size: 14px;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .actions button {
+      padding: 8px 11px;
+      font-size: 13px;
+      border-radius: 12px;
+    }
+
+    .empty {
+      padding: 52px 20px;
+      text-align: center;
+      color: var(--muted);
+      border: 1px dashed #cbd5e1;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.5);
+    }
+
+    .hint {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .footer-tools {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+
+    .footer-tools button {
+      font-size: 13px;
+      padding: 10px 12px;
+    }
+
+    @media (max-width: 880px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .form-card {
+        position: static;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .app {
+        padding-top: 18px;
+      }
+
+      .summary {
+        grid-template-columns: 1fr;
+      }
+
+      .tools {
+        grid-template-columns: 1fr;
+      }
+
+      .two,
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      .item-top {
+        flex-direction: column;
+      }
+
+      .price-pill {
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <div class="title-row">
+        <div>
+          <h1>电子产品日均使用金额</h1>
+          <p class="subtitle">输入购买日期和价格，自动计算已使用天数、日均金额。数据只保存在你的浏览器本地。</p>
+        </div>
+        <div class="badge"><span class="dot"></span> 本地保存 · 无需注册</div>
+      </div>
+    </header>
+
+    <section class="summary" aria-label="统计概览">
+      <div class="summary-item">
+        <div class="label">设备总数</div>
+        <div class="value" id="totalCount">0</div>
+      </div>
+      <div class="summary-item">
+        <div class="label">总投入</div>
+        <div class="value" id="totalCost">¥0</div>
+      </div>
+      <div class="summary-item">
+        <div class="label">平均日均</div>
+        <div class="value" id="avgDaily">¥0.00</div>
+      </div>
+    </section>
+
+    <section class="grid">
+      <form class="card form-card" id="productForm">
+        <h2 id="formTitle">添加设备</h2>
+
+        <input type="hidden" id="editId" />
+
+        <div class="field">
+          <label for="name">设备名称</label>
+          <input id="name" type="text" placeholder="例如：iPad Pro、Kindle、相机" required />
+        </div>
+
+        <div class="two">
+          <div class="field">
+            <label for="price">购买价格（元）</label>
+            <input id="price" type="number" min="0" step="0.01" placeholder="3999" required />
+          </div>
+
+          <div class="field">
+            <label for="purchaseDate">购买日期</label>
+            <input id="purchaseDate" type="date" required />
+          </div>
+        </div>
+
+        <div class="two">
+          <div class="field">
+            <label for="category">分类</label>
+            <select id="category">
+              <option value="手机">手机</option>
+              <option value="电脑">电脑</option>
+              <option value="平板">平板</option>
+              <option value="耳机">耳机</option>
+              <option value="相机">相机</option>
+              <option value="游戏设备">游戏设备</option>
+              <option value="其他">其他</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="status">状态</label>
+            <select id="status">
+              <option value="使用中">使用中</option>
+              <option value="已闲置">已闲置</option>
+              <option value="已出掉">已出掉</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="note">备注</label>
+          <textarea id="note" placeholder="例如：二手购入、保修到期、准备出掉……"></textarea>
+        </div>
+
+        <div class="button-row">
+          <button class="primary" type="submit">保存</button>
+          <button class="secondary" type="button" id="resetBtn">清空</button>
+        </div>
+
+        <p class="hint">提示：本文件可以直接双击打开。换浏览器或清理浏览器数据后，本地记录可能会消失。</p>
+      </form>
+
+      <section class="card list-card">
+        <h2>设备清单</h2>
+
+        <div class="tools">
+          <input id="search" type="search" placeholder="搜索设备名称 / 分类 / 备注" />
+          <select id="sort">
+            <option value="dailyDesc">日均金额：高到低</option>
+            <option value="dailyAsc">日均金额：低到高</option>
+            <option value="dateDesc">购买日期：新到旧</option>
+            <option value="dateAsc">购买日期：旧到新</option>
+            <option value="priceDesc">价格：高到低</option>
+            <option value="priceAsc">价格：低到高</option>
+          </select>
+        </div>
+
+        <div class="items" id="items"></div>
+
+        <div class="footer-tools">
+          <button class="ghost" type="button" id="exportBtn">导出数据</button>
+          <button class="ghost" type="button" id="importBtn">导入数据</button>
+          <button class="danger" type="button" id="clearAllBtn">清空全部</button>
+          <input id="importFile" type="file" accept="application/json" hidden />
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const STORAGE_KEY = "daily_cost_products_v1";
+
+    const $ = (id) => document.getElementById(id);
+
+    const form = $("productForm");
+    const editId = $("editId");
+    const nameInput = $("name");
+    const priceInput = $("price");
+    const purchaseDateInput = $("purchaseDate");
+    const categoryInput = $("category");
+    const statusInput = $("status");
+    const noteInput = $("note");
+    const itemsEl = $("items");
+    const searchInput = $("search");
+    const sortInput = $("sort");
+
+    let products = loadProducts();
+
+    function todayISO() {
+      const now = new Date();
+      const tzOffset = now.getTimezoneOffset() * 60000;
+      return new Date(now - tzOffset).toISOString().slice(0, 10);
+    }
+
+    function loadProducts() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveProducts() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+    }
+
+    function yuan(value) {
+      return "¥" + Number(value || 0).toLocaleString("zh-CN", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+
+    function yuanCompact(value) {
+      return "¥" + Number(value || 0).toLocaleString("zh-CN", {
+        maximumFractionDigits: 0
+      });
+    }
+
+    function usedDays(dateString) {
+      const start = new Date(dateString + "T00:00:00");
+      const today = new Date(todayISO() + "T00:00:00");
+      const diff = Math.floor((today - start) / (1000 * 60 * 60 * 24));
+      return Math.max(diff + 1, 1);
+    }
+
+    function dailyCost(product) {
+      return Number(product.price) / usedDays(product.purchaseDate);
+    }
+
+    function escapeHTML(str) {
+      return String(str || "").replace(/[&<>"']/g, (m) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      }[m]));
+    }
+
+    function filteredProducts() {
+      const keyword = searchInput.value.trim().toLowerCase();
+
+      let list = products.filter((p) => {
+        const text = `${p.name} ${p.category} ${p.status} ${p.note}`.toLowerCase();
+        return text.includes(keyword);
+      });
+
+      const sort = sortInput.value;
+      list.sort((a, b) => {
+        if (sort === "dailyDesc") return dailyCost(b) - dailyCost(a);
+        if (sort === "dailyAsc") return dailyCost(a) - dailyCost(b);
+        if (sort === "dateDesc") return new Date(b.purchaseDate) - new Date(a.purchaseDate);
+        if (sort === "dateAsc") return new Date(a.purchaseDate) - new Date(b.purchaseDate);
+        if (sort === "priceDesc") return Number(b.price) - Number(a.price);
+        if (sort === "priceAsc") return Number(a.price) - Number(b.price);
+        return 0;
+      });
+
+      return list;
+    }
+
+    function renderSummary() {
+      const totalCount = products.length;
+      const totalCost = products.reduce((sum, p) => sum + Number(p.price || 0), 0);
+      const avgDaily = totalCount
+        ? products.reduce((sum, p) => sum + dailyCost(p), 0) / totalCount
+        : 0;
+
+      $("totalCount").textContent = totalCount;
+      $("totalCost").textContent = yuanCompact(totalCost);
+      $("avgDaily").textContent = yuan(avgDaily);
+    }
+
+    function renderItems() {
+      const list = filteredProducts();
+
+      if (!list.length) {
+        itemsEl.innerHTML = `
+          <div class="empty">
+            还没有设备记录。<br />
+            左边填一个设备，马上就能算日均金额。
+          </div>
+        `;
+        renderSummary();
+        return;
+      }
+
+      itemsEl.innerHTML = list.map((p) => {
+        const days = usedDays(p.purchaseDate);
+        const daily = dailyCost(p);
+        return `
+          <article class="item">
+            <div class="item-top">
+              <div>
+                <div class="item-name">${escapeHTML(p.name)}</div>
+                <div class="item-meta">
+                  ${escapeHTML(p.category)} · ${escapeHTML(p.status)} · 购买于 ${escapeHTML(p.purchaseDate)}
+                  ${p.note ? `<br />备注：${escapeHTML(p.note)}` : ""}
+                </div>
+              </div>
+              <div class="price-pill">
+                <div class="daily">${yuan(daily)} <small>/ 天</small></div>
+              </div>
+            </div>
+
+            <div class="stats">
+              <div class="stat"><span>购买价格</span><b>${yuan(p.price)}</b></div>
+              <div class="stat"><span>已使用</span><b>${days} 天</b></div>
+              <div class="stat"><span>每月约</span><b>${yuan(daily * 30)}</b></div>
+            </div>
+
+            <div class="actions">
+              <button class="ghost" type="button" onclick="editProduct('${p.id}')">编辑</button>
+              <button class="danger" type="button" onclick="deleteProduct('${p.id}')">删除</button>
+            </div>
+          </article>
+        `;
+      }).join("");
+
+      renderSummary();
+    }
+
+    function resetForm() {
+      editId.value = "";
+      form.reset();
+      purchaseDateInput.value = todayISO();
+      $("formTitle").textContent = "添加设备";
+    }
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      const product = {
+        id: editId.value || crypto.randomUUID(),
+        name: nameInput.value.trim(),
+        price: Number(priceInput.value),
+        purchaseDate: purchaseDateInput.value,
+        category: categoryInput.value,
+        status: statusInput.value,
+        note: noteInput.value.trim(),
+        updatedAt: new Date().toISOString()
+      };
+
+      if (!product.name || !product.price || !product.purchaseDate) {
+        alert("设备名称、价格和购买日期都要填。");
+        return;
+      }
+
+      if (new Date(product.purchaseDate) > new Date(todayISO())) {
+        alert("购买日期不能晚于今天。");
+        return;
+      }
+
+      const index = products.findIndex((p) => p.id === product.id);
+      if (index >= 0) {
+        products[index] = product;
+      } else {
+        products.push(product);
+      }
+
+      saveProducts();
+      resetForm();
+      renderItems();
+    });
+
+    window.editProduct = function(id) {
+      const p = products.find((item) => item.id === id);
+      if (!p) return;
+
+      editId.value = p.id;
+      nameInput.value = p.name;
+      priceInput.value = p.price;
+      purchaseDateInput.value = p.purchaseDate;
+      categoryInput.value = p.category;
+      statusInput.value = p.status;
+      noteInput.value = p.note || "";
+      $("formTitle").textContent = "编辑设备";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    window.deleteProduct = function(id) {
+      const p = products.find((item) => item.id === id);
+      if (!p) return;
+      if (!confirm(`确定删除「${p.name}」吗？`)) return;
+
+      products = products.filter((item) => item.id !== id);
+      saveProducts();
+      renderItems();
+    }
+
+    $("resetBtn").addEventListener("click", resetForm);
+    searchInput.addEventListener("input", renderItems);
+    sortInput.addEventListener("change", renderItems);
+
+    $("clearAllBtn").addEventListener("click", () => {
+      if (!products.length) return;
+      if (!confirm("确定清空全部设备记录吗？这个操作不能撤回。")) return;
+      products = [];
+      saveProducts();
+      resetForm();
+      renderItems();
+    });
+
+    $("exportBtn").addEventListener("click", () => {
+      const blob = new Blob([JSON.stringify(products, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `电子产品日均金额数据-${todayISO()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    $("importBtn").addEventListener("click", () => {
+      $("importFile").click();
+    });
+
+    $("importFile").addEventListener("change", async (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      try {
+        const text = await file.text();
+        const data = JSON.parse(text);
+
+        if (!Array.isArray(data)) {
+          alert("导入失败：文件格式不对。");
+          return;
+        }
+
+        products = data.map((p) => ({
+          id: p.id || crypto.randomUUID(),
+          name: String(p.name || "未命名设备"),
+          price: Number(p.price || 0),
+          purchaseDate: p.purchaseDate || todayISO(),
+          category: p.category || "其他",
+          status: p.status || "使用中",
+          note: p.note || "",
+          updatedAt: p.updatedAt || new Date().toISOString()
+        }));
+
+        saveProducts();
+        renderItems();
+        alert("导入成功。");
+      } catch {
+        alert("导入失败：无法读取这个 JSON 文件。");
+      } finally {
+        event.target.value = "";
+      }
+    });
+
+    purchaseDateInput.value = todayISO();
+    renderItems();
+  </script>
+</body>
+</html>

@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>每日小说场景素材练习（三选一）</title>
+<style>
+:root{
+  --bg:#f7efe5;--card:#fffaf3df;--text:#241811;--muted:#7b6a5d;--line:#e7d8c7;
+  --main:#9a4a2d;--soft:#f3dccd;--green:#177a56;--danger:#c2410c;
+  --shadow:0 18px 45px #3d28171a
+}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;color:var(--text);background:radial-gradient(circle at 10% 8%,#b85d3726,transparent 30%),radial-gradient(circle at 90% 12%,#1b7d5420,transparent 34%),var(--bg)}
+.app{max-width:1180px;margin:auto;padding:28px 16px 50px}
+header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap;margin-bottom:20px}
+h1{margin:0 0 8px;font-size:clamp(30px,5vw,48px);letter-spacing:-.06em;line-height:1.05}
+.sub{margin:0;color:var(--muted);line-height:1.8}
+.badge{padding:10px 14px;border-radius:999px;background:#fffaf3cc;border:1px solid #fff;box-shadow:var(--shadow);font-size:13px;color:#6b4f3f}
+.grid{display:grid;grid-template-columns:430px 1fr;gap:18px;align-items:start}
+.card{background:var(--card);border:1px solid #ffffffcc;border-radius:24px;box-shadow:var(--shadow);backdrop-filter:blur(14px)}
+.prompt{padding:22px;position:sticky;top:16px}
+.date{display:flex;justify-content:space-between;color:var(--muted);font-size:13px;margin-bottom:12px}
+.date b{color:var(--main)}
+h2{margin:0 0 14px;font-size:21px;letter-spacing:-.03em}
+.option-list{display:grid;gap:10px;margin:12px 0 14px}
+.option{border:1px solid var(--line);border-radius:18px;padding:13px;background:#fff9;cursor:pointer;transition:.15s}
+.option:hover{transform:translateY(-1px);box-shadow:0 10px 24px #3d281711}
+.option.active{border-color:#9a4a2d99;background:linear-gradient(#ffffffb8,#ffffff88),var(--soft);box-shadow:0 0 0 4px #9a4a2d18}
+.option-top{display:flex;justify-content:space-between;gap:10px;margin-bottom:6px}
+.option-title{font-weight:900;line-height:1.35}
+.option-tag{font-size:12px;color:#6b3e2d;background:#fff;border:1px solid #9a4a2d22;border-radius:999px;padding:4px 8px;white-space:nowrap}
+.option-scene{font-size:13px;color:#5b4639;line-height:1.65;margin:0}
+.scene{background:linear-gradient(#ffffff90,#ffffff55),var(--soft);border:1px solid #9a4a2d22;border-radius:20px;padding:16px;margin-bottom:14px}
+.scene p{margin:0;font-size:17px;line-height:1.8;font-weight:800}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.chip{font-size:12px;font-weight:700;color:#6b3e2d;background:#ffffff99;border:1px solid #9a4a2d22;border-radius:999px;padding:7px 10px}
+.detail,.hint{color:var(--muted);line-height:1.75;font-size:14px}
+.hint{font-size:12px;margin:10px 0 0}
+.req{margin:8px 0 0;padding-left:18px;color:#594236;line-height:1.8;font-size:14px}
+button{border:0;border-radius:15px;padding:11px 13px;font:inherit;font-weight:800;cursor:pointer}
+button:active{transform:translateY(1px)}
+.primary{color:white;background:linear-gradient(135deg,var(--main),#5e2c1e);box-shadow:0 12px 26px #7f3b212f}
+.ghost{background:#fff9;border:1px solid var(--line);color:#4d372b}
+.secondary{background:#eee0d1;color:#443024}
+.danger{background:#fff1e8;color:var(--danger)}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.writer,.history,.study{padding:22px}
+.top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-bottom:12px}
+.stats{display:flex;gap:8px;flex-wrap:wrap;color:var(--muted);font-size:13px}
+.stat{padding:7px 10px;border-radius:999px;background:#fff8;border:1px solid var(--line)}
+textarea{width:100%;min-height:315px;resize:vertical;border:1px solid var(--line);border-radius:20px;padding:16px;background:#fffaf3bb;color:var(--text);font:16px/1.85 "KaiTi","PingFang SC","Microsoft YaHei",sans-serif;outline:none}
+textarea:focus,input:focus,select:focus{border-color:#9a4a2d88;box-shadow:0 0 0 4px #9a4a2d1a}
+input,select{width:100%;border:1px solid var(--line);border-radius:14px;padding:11px 12px;background:#fffaf3bb;font:inherit;outline:none}
+.study{margin-top:18px;display:none}
+.study.show{display:block}
+.study-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.study-card{border:1px solid var(--line);border-radius:18px;background:#fff8;padding:14px}
+.source{font-weight:900;margin-bottom:8px}
+.quote{font-family:"KaiTi","PingFang SC","Microsoft YaHei",sans-serif;font-size:16px;line-height:1.75;background:#fffaf3bb;border-radius:14px;padding:10px;margin:8px 0}
+.learn{color:#5b4639;font-size:13px;line-height:1.75}
+.practice{margin-top:8px;color:var(--main);font-size:13px;line-height:1.7;font-weight:800}
+.history{margin-top:18px}
+.tools{display:grid;grid-template-columns:1fr 160px;gap:10px;margin:14px 0}
+.list{display:grid;gap:12px}
+.item{padding:15px;border:1px solid var(--line);border-radius:18px;background:#fff8}
+.item-title{font-weight:900;margin-bottom:5px}
+.meta{color:var(--muted);font-size:12px;line-height:1.6}
+.text{white-space:pre-wrap;line-height:1.85;background:#fffaf3bb;border-radius:14px;padding:12px;margin-top:10px;max-height:210px;overflow:auto}
+.actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-top:10px}
+.actions button,.foot button{font-size:13px;padding:8px 10px;border-radius:12px}
+.empty{text-align:center;color:var(--muted);border:1px dashed #cbb9a5;border-radius:18px;padding:42px 18px;line-height:1.8}
+.foot{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(18px);opacity:0;background:#241811ee;color:white;border-radius:999px;padding:11px 15px;transition:.18s;pointer-events:none;z-index:10}
+.toast.show{opacity:1;transform:translateX(-50%)}
+@media(max-width:950px){.grid{grid-template-columns:1fr}.prompt{position:static}.study-grid{grid-template-columns:1fr}}
+@media(max-width:560px){.tools{grid-template-columns:1fr}textarea{min-height:260px}}
+</style>
+</head>
+<body>
+<main class="app">
+<header>
+  <div>
+    <h1>每日小说场景素材练习</h1>
+    <p class="sub">每天给 3 个小说场景素材，三选一写作。提交后会给你相似的经典小说片段学习卡。</p>
+  </div>
+  <div class="badge">本地保存 · 三选一 · 提交后学习</div>
+</header>
+
+<section class="grid">
+<aside class="card prompt">
+  <div class="date"><span>今日三选一</span><b id="dateText"></b></div>
+  <h2>选择一个场景</h2>
+  <div class="option-list" id="optionList"></div>
+
+  <div class="scene">
+    <p id="scene"></p>
+    <div class="chips" id="chips"></div>
+  </div>
+  <p class="detail" id="detail"></p>
+  <b style="font-size:13px;color:var(--muted)">练习要求</b>
+  <ul class="req" id="req"></ul>
+
+  <div class="row">
+    <button class="primary" id="copyPrompt">复制题目</button>
+    <button class="secondary" id="loadToday">载入当前选项记录</button>
+  </div>
+  <p class="hint">同一天的 3 个选项固定不变。每个选项可单独保存一篇；换选项不会覆盖另一个选项。</p>
+</aside>
+
+<section>
+  <div class="card writer">
+    <div class="top">
+      <h2 id="writerTitle">写选中的片段</h2>
+      <div class="stats">
+        <span class="stat" id="chars">0 字</span>
+        <span class="stat" id="sentences">0 句</span>
+        <span class="stat" id="state">未保存</span>
+      </div>
+    </div>
+    <textarea id="draft" placeholder="从一个具体动作开始写，不要先解释世界观。比如：她把伞收起来时，伞骨里掉出了一枚不属于这个时代的硬币……"></textarea>
+    <div class="row">
+      <button class="primary" id="save">提交并保存练习</button>
+      <button class="ghost" id="clearDraft">清空草稿</button>
+    </div>
+    <p class="hint">提交后会在下面显示相似小说片段学习卡。学习重点不是抄句子，而是看：它怎么开场、怎么用物件、怎么把情绪藏进动作。</p>
+  </div>
+
+  <div class="card study" id="study">
+    <div class="top">
+      <h2>相似小说片段学习</h2>
+      <div class="stats"><span class="stat">短摘句 + 写法拆解</span></div>
+    </div>
+    <div class="study-grid" id="studyGrid"></div>
+    <p class="hint">这些摘句只放很短一段，主要用于学习写法。你可以模仿“结构”和“观察角度”，不要照搬原句。</p>
+  </div>
+
+  <div class="card history">
+    <div class="top">
+      <h2>以前写过的片段</h2>
+      <div class="stats">
+        <span class="stat" id="total">0 篇</span>
+        <span class="stat" id="totalChars">0 字累计</span>
+      </div>
+    </div>
+    <div class="tools">
+      <input id="search" placeholder="搜索日期、题目、正文关键词">
+      <select id="sort">
+        <option value="new">日期：新到旧</option>
+        <option value="old">日期：旧到新</option>
+        <option value="long">字数：多到少</option>
+        <option value="short">字数：少到多</option>
+      </select>
+    </div>
+    <div class="list" id="list"></div>
+    <div class="foot">
+      <button class="ghost" id="export">导出练习</button>
+      <button class="ghost" id="importBtn">导入练习</button>
+      <button class="danger" id="clearAll">清空全部</button>
+      <input id="importFile" type="file" accept="application/json" hidden>
+    </div>
+  </div>
+</section>
+</section>
+</main>
+<div class="toast" id="toast">已保存</div>
+
+<script>
+const KEY="novel_scene_practice_v2";
+const OLD_KEY="novel_scene_practice_v1";
+const $=id=>document.getElementById(id);
+
+const pools={
+loc:["暴雨夜的旧电影院","即将拆迁的海边旅馆","凌晨四点的地下停车场","晚点七小时的绿皮火车","停电后的大型商场","冬天的无人码头","居民楼顶层的旧书店","废弃游乐园的检票口","医院自动贩卖机旁","暴雪封路的小镇招待所","深夜营业的照相馆","最后一班公交车上","海雾里的灯塔","学校天台","年久失修的水族馆","凌晨的自助洗衣房","刚散场的剧院后台","长途客运站的失物招领处"],
+char:["一个坚持说自己已经死过一次的人","一位总在撒谎但这次说了真话的老人","一个不敢回家的高中生","一名突然失去味觉的厨师","一个替别人保管秘密的快递员","一位只拍背影的摄影师","一个准备离职却被困住的前台","一名能记住陌生人梦境的护士","一个多年不联系家人的修表匠","一位正在寻找自己声音的配音演员","一个把遗物错送给陌生人的搬家公司员工","一个每天给未来自己写信的人","一位从不打开伞的卖伞人","一名负责清理旧房子的年轻人"],
+obj:["一把打不开的铜钥匙","一张被水泡花的合照","一只没有指针的手表","一封没有收件人的信","一枚来自陌生年代的硬币","一个录着杂音的旧磁带","一张被撕掉半边的船票","一瓶贴错标签的香水","一本夹着头发的旧日记","一部只能收到短信的旧手机","一只写着别人名字的行李箱","一张地图上不存在的车票","一盏会自己亮起的台灯","一副度数不对的眼镜"],
+conf:["必须在天亮前把东西还回去","所有人都假装没有看见异常","主角发现自己记错了最重要的一件事","一个熟人突然用陌生人的方式说话","有人要求主角删除唯一的证据","主角不得不相信最讨厌的人","一场告别被反复打断","某个微小选择会改变另一个人的命运","主角收到一条来自过去的提醒","大家都在等待一个不会来的人","主角发现自己一直保护错了对象","一个谎言快要比真相更仁慈","某个失踪的人留下了新的生活痕迹","秘密被说出口，但没人相信"],
+mood:["克制、潮湿、像雨后没干的衣角","冷幽默，表面平静但暗处有刺","温柔但不煽情","紧张，像门外有人一直没敲门","荒诞，像生活偷偷拧错了一个螺丝","孤独但明亮","轻微悬疑，不要直接写恐怖","带一点旧物感和时间灰尘","生活流，靠细节推进","像一场即将结束的梦","表面日常，底下有隐秘危险","温暖，像冬天室内的灯"],
+task:["开头第一句必须是动作，不能是天气或心理描写。","全文至少出现一个具体声音。","不要解释设定，用人物反应让读者自己猜。","写一个人物想说但没有说出口的话。","结尾留一个轻微反转，不要强行惊天大反转。","至少写一个触觉细节。","不要使用“难过、孤独、害怕、温暖”这类直接情绪词。","场景中必须有一个被反复看见的小物件。","加入一句看似平常但读完不太对劲的对白。","让主角在最后做一个很小但明确的选择。","至少有一句对白不超过五个字。","结尾不要解释，只停在一个画面上。"]
+};
+
+const studyBank=[
+{tags:["日常","人物","动作"],source:"鲁迅《孔乙己》",quote:"孔乙己是站着喝酒而穿长衫的唯一的人。",learn:"一句话同时写出身份错位、人物处境和旁人视角。它不是先解释人物可怜，而是用一个矛盾姿态把人立住。",practice:"学它：给你的主角设计一个“动作和身份不相称”的细节。"},
+{tags:["旧物","回忆","景物"],source:"鲁迅《故乡》",quote:"深蓝的天空中挂着一轮金黄的圆月。",learn:"景物不是摆设，它会带出记忆质感。颜色很清楚，画面很安静，所以后面的情绪更容易落下来。",practice:"学它：用一个颜色强烈的画面开场，但不要马上解释情绪。"},
+{tags:["悬疑","异常","开头"],source:"鲁迅《狂人日记》",quote:"今天晚上，很好的月光。",learn:"句子极短，表面平常，但放在异常叙述里会变得不安。悬疑不一定靠大事件，可以靠语气和上下文错位。",practice:"学它：写一句看似普通、但读者会觉得不太对劲的开头。"},
+{tags:["告别","命运","诗性"],source:"曹雪芹《红楼梦》",quote:"满纸荒唐言，一把辛酸泪。",learn:"强情绪没有直接喊出来，而是压成两个意象：纸和泪。它适合学习“把大情绪装进小物件”。",practice:"学它：让你的关键物件承担人物没说出口的话。"},
+{tags:["声音","夜晚","悬疑"],source:"蒲松龄《聊斋志异》",quote:"闻窗外有声，启视之。",learn:"先给声音，再给动作，信息非常少，所以读者会自然跟着人物去看。",practice:"学它：先写声音，再写人物的反应，不要急着揭示原因。"},
+{tags:["冲突","对白","人物"],source:"吴敬梓《儒林外史》",quote:"众人看严监生时，点一点头，把手垂下。",learn:"人物的执念靠动作收束，不靠作者解释。最后一下动作让荒诞和悲凉同时出现。",practice:"学它：给人物一个反复出现的小动作，结尾让动作发生变化。"},
+{tags:["冒险","危险","动作"],source:"施耐庵《水浒传》",quote:"那雪下得正紧。",learn:"短句制造压迫感。环境不是背景，而是逼着人物继续行动的力量。",practice:"学它：让天气或空间成为阻碍，而不是单纯装饰。"},
+{tags:["陌生","旅途","观察"],source:"吴承恩《西游记》",quote:"山高必有怪，岭峻却生精。",learn:"用环境预告危险，让读者先产生期待。适合写旅途、异地、未知空间。",practice:"学它：用地点特征暗示接下来会发生什么。"},
+{tags:["权谋","等待","紧张"],source:"罗贯中《三国演义》",quote:"天下大势，分久必合，合久必分。",learn:"一句话把个人故事放进更大的变化里。适合学习“让小场景带出大背景”。",practice:"学它：给你的场景加一个更大的外部变化，但只露一角。"},
+{tags:["梦感","命运","物件"],source:"曹雪芹《红楼梦》",quote:"假作真时真亦假，无为有处有还无。",learn:"适合学习真假错位。不要解释奇幻设定，让人物在真假之间做选择。",practice:"学它：让你的物件同时像证据又像幻觉。"},
+{tags:["市井","讽刺","旁观"],source:"鲁迅《药》",quote:"老栓也向那边看，却只见一堆人的后背。",learn:"视线被挡住，反而写出了旁观者的麻木和拥挤。场面可以通过“看不见”来写。",practice:"学它：让主角错过最关键的一眼。"},
+{tags:["荒诞","日常","反差"],source:"刘鹗《老残游记》",quote:"家家泉水，户户垂杨。",learn:"一句环境描写先建立生活感，后面的异常才更有反差。",practice:"学它：先把地方写得很日常，再放入一个不该出现的东西。"}
+];
+
+function today(){let n=new Date(),o=n.getTimezoneOffset()*60000;return new Date(n-o).toISOString().slice(0,10)}
+const DAY=today();
+let selected=0;
+let entries=load();
+
+function fmt(d){let x=new Date(d+"T00:00:00"),w="日一二三四五六"[x.getDay()];return `${x.getFullYear()}年${x.getMonth()+1}月${x.getDate()}日 星期${w}`}
+function hash(s){let h=2166136261;for(let c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
+function promptOf(date=DAY,index=0){
+ const salt=date+"_"+index+"_";
+ let p={
+  loc:pools.loc[hash(salt+"loc")%pools.loc.length],
+  char:pools.char[hash(salt+"char")%pools.char.length],
+  obj:pools.obj[hash(salt+"obj")%pools.obj.length],
+  conf:pools.conf[hash(salt+"conf")%pools.conf.length],
+  mood:pools.mood[hash(salt+"mood")%pools.mood.length]
+ };
+ let t1=pools.task[hash(salt+"t1")%pools.task.length],t2=pools.task[hash(salt+"t2")%pools.task.length];
+ if(t1===t2)t2=pools.task[hash(salt+"t3")%pools.task.length];
+ p.index=index;
+ p.title=p.loc+"里的"+p.char.replace(/^一位|^一名|^一个/,"");
+ p.scene=`在${p.loc}，${p.char}发现了${p.obj}。${p.conf}。`;
+ p.detail="写成 300—800 字的片段。重点不是把故事讲完，而是把“此刻”写活：人物正在做什么、看见什么、隐瞒什么、最终做了哪个小决定。";
+ p.tasks=[t1,t2];
+ p.tags=guessTags(p);
+ return p
+}
+function guessTags(p){
+ let tags=[];
+ if(/夜|凌晨|暴雨|暴雪|海雾|停电/.test(p.loc))tags.push("夜晚","悬疑");
+ if(/旧|拆迁|失物|遗物|合照|日记|磁带|船票|钥匙|手表|信/.test(p.loc+p.obj))tags.push("旧物");
+ if(/告别|等待|不会来|家人|错送/.test(p.conf+p.char))tags.push("告别");
+ if(/假装|证据|异常|过去|失踪|秘密|真相/.test(p.conf))tags.push("悬疑");
+ if(/荒诞|奇幻|真假|陌生年代|不存在/.test(p.mood+p.obj))tags.push("荒诞");
+ if(/日常|生活流|商场|公交|洗衣房|医院/.test(p.mood+p.loc))tags.push("日常");
+ tags.push("人物","物件");
+ return [...new Set(tags)];
+}
+const OPTIONS=[promptOf(DAY,0),promptOf(DAY,1),promptOf(DAY,2)];
+
+function load(){
+ try{
+  let data=JSON.parse(localStorage.getItem(KEY));
+  if(Array.isArray(data))return data;
+  let old=JSON.parse(localStorage.getItem(OLD_KEY)||"[]");
+  if(Array.isArray(old)&&old.length){
+    return old.map(e=>({...e,choiceIndex:e.choiceIndex??0,key:e.key||`${e.date||DAY}_0`}));
+  }
+  return [];
+ }catch{return []}
+}
+function saveStore(){localStorage.setItem(KEY,JSON.stringify(entries))}
+function esc(s){return String(s||"").replace(/[&<>'"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[m]))}
+function charCount(t){return Array.from(String(t||"").replace(/\s/g,"")).length}
+function sentCount(t){let m=String(t||"").match(/[。！？!?…]+/g);return m?m.length:0}
+function id(){return Date.now().toString(36)+Math.random().toString(36).slice(2)}
+function keyOf(date=DAY,index=selected){return `${date}_${index}`}
+function toast(t){$("toast").textContent=t;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),1400)}
+function currentPrompt(){return OPTIONS[selected]}
+
+function renderOptions(){
+ $("dateText").textContent=fmt(DAY);
+ $("optionList").innerHTML=OPTIONS.map((p,i)=>{
+  const saved=entries.some(e=>e.key===keyOf(DAY,i));
+  return `<div class="option ${i===selected?"active":""}" onclick="chooseOption(${i})">
+    <div class="option-top">
+      <div class="option-title">${i+1}. ${esc(p.title)}</div>
+      <div class="option-tag">${saved?"已保存":"可选"}</div>
+    </div>
+    <p class="option-scene">${esc(p.scene)}</p>
+  </div>`
+ }).join("");
+}
+function renderPrompt(){
+ let P=currentPrompt();
+ $("scene").textContent=P.scene;
+ $("detail").textContent=P.detail;
+ $("chips").innerHTML=[`地点：${P.loc}`,`人物：${P.char}`,`物件：${P.obj}`,`氛围：${P.mood}`].map(x=>`<span class="chip">${esc(x)}</span>`).join("");
+ $("req").innerHTML=P.tasks.map(x=>`<li>${esc(x)}</li>`).join("");
+ $("writerTitle").textContent=`写选项 ${selected+1}：${P.title}`;
+}
+window.chooseOption=function(i){
+ selected=i;
+ renderOptions();
+ renderPrompt();
+ const e=entries.find(v=>v.key===keyOf(DAY,selected));
+ $("draft").value=e?e.content:"";
+ $("study").classList.remove("show");
+ updateStats();
+}
+
+function updateStats(){
+ let t=$("draft").value;
+ $("chars").textContent=charCount(t)+" 字";
+ $("sentences").textContent=sentCount(t)+" 句";
+ $("state").textContent=entries.some(e=>e.key===keyOf(DAY,selected))?"当前选项已保存":"未保存";
+}
+
+function saveToday(){
+ let content=$("draft").value.trim();
+ if(!content){alert("还没写正文，先写一点再提交。");return}
+ let P=currentPrompt();
+ let k=keyOf(DAY,selected);
+ let i=entries.findIndex(e=>e.key===k), now=new Date().toISOString();
+ let e={
+  id:i>=0?entries[i].id:id(),
+  key:k,
+  date:DAY,
+  choiceIndex:selected,
+  prompt:P,
+  content,
+  charCount:charCount(content),
+  sentenceCount:sentCount(content),
+  createdAt:i>=0?entries[i].createdAt:now,
+  updatedAt:now
+ };
+ if(i>=0)entries[i]=e;else entries.push(e);
+ saveStore();
+ renderOptions();renderHistory();updateStats();renderStudy(P);toast("已提交并保存");
+}
+
+function renderStudy(P){
+ const selectedCards=pickStudyCards(P);
+ $("studyGrid").innerHTML=selectedCards.map(c=>`
+  <article class="study-card">
+    <div class="source">${esc(c.source)}</div>
+    <div class="quote">“${esc(c.quote)}”</div>
+    <div class="learn">${esc(c.learn)}</div>
+    <div class="practice">${esc(c.practice)}</div>
+  </article>
+ `).join("");
+ $("study").classList.add("show");
+ $("study").scrollIntoView({behavior:"smooth",block:"start"});
+}
+function pickStudyCards(P){
+ let scored=studyBank.map(c=>{
+  let score=0;
+  for(const t of P.tags){if(c.tags.includes(t))score+=3}
+  if(/声音|声/.test(P.tasks.join(""))&&c.tags.includes("声音"))score+=4;
+  if(/对白|话/.test(P.tasks.join(""))&&c.tags.includes("对白"))score+=4;
+  if(/物件|小物件|普通物品/.test(P.tasks.join(""))&&c.tags.includes("物件"))score+=4;
+  if(/动作/.test(P.tasks.join(""))&&c.tags.includes("动作"))score+=3;
+  score += hash(P.title+c.source)%3;
+  return {c,score}
+ }).sort((a,b)=>b.score-a.score).slice(0,3).map(x=>x.c);
+ return scored;
+}
+
+function savePromptText(){
+ let P=currentPrompt();
+ return `【选项 ${selected+1}：${P.title}】\n${P.scene}\n氛围：${P.mood}\n要求：${P.tasks.join("；")}\n${P.detail}`;
+}
+
+function listData(){
+ let q=$("search").value.trim().toLowerCase();
+ let arr=entries.filter(e=>(e.date+" 选项"+((e.choiceIndex??0)+1)+" "+(e.prompt?.title||"")+" "+(e.prompt?.scene||"")+" "+e.content).toLowerCase().includes(q));
+ let s=$("sort").value;
+ arr.sort((a,b)=>s==="new"?new Date(b.updatedAt||b.date)-new Date(a.updatedAt||a.date):s==="old"?new Date(a.updatedAt||a.date)-new Date(b.updatedAt||b.date):s==="long"?(b.charCount||0)-(a.charCount||0):(a.charCount||0)-(b.charCount||0));
+ return arr
+}
+function renderHistory(){
+ let arr=listData(), total=entries.reduce((n,e)=>n+(e.charCount||charCount(e.content)),0);
+ $("total").textContent=entries.length+" 篇"; $("totalChars").textContent=total+" 字累计";
+ if(!arr.length){
+  $("list").innerHTML='<div class="empty">还没有保存过练习。<br>写完后点“提交并保存练习”，这里就会出现历史记录。</div>';
+  return
+ }
+ $("list").innerHTML=arr.map(e=>{
+  let p=e.prompt||promptOf(e.date,e.choiceIndex||0);
+  return `<article class="item">
+    <div class="item-title">${esc(fmt(e.date))} · 选项 ${(e.choiceIndex??0)+1}：${esc(p.title)}</div>
+    <div class="meta">${e.charCount||charCount(e.content)} 字 · ${e.sentenceCount||sentCount(e.content)} 句<br>题目：${esc(p.scene)}</div>
+    <div class="text">${esc(e.content)}</div>
+    <div class="actions">
+      <button class="ghost" onclick="copyEntry('${e.id}')">复制</button>
+      <button class="secondary" onclick="editEntry('${e.id}')">继续编辑</button>
+      <button class="ghost" onclick="studyEntry('${e.id}')">看学习卡</button>
+      <button class="danger" onclick="delEntry('${e.id}')">删除</button>
+    </div>
+  </article>`
+ }).join("")
+}
+window.editEntry=function(x){
+ let e=entries.find(v=>v.id===x);if(!e)return;
+ if(e.date===DAY && [0,1,2].includes(e.choiceIndex)){selected=e.choiceIndex;renderOptions();renderPrompt()}
+ else if(!confirm("这不是今天的练习。载入编辑区后，提交会保存到今天当前选项。继续吗？"))return;
+ $("draft").value=e.content;updateStats();scrollTo({top:0,behavior:"smooth"})
+}
+window.studyEntry=function(x){
+ let e=entries.find(v=>v.id===x);if(!e)return;
+ renderStudy(e.prompt||promptOf(e.date,e.choiceIndex||0));
+}
+window.delEntry=function(x){
+ let e=entries.find(v=>v.id===x);if(!e)return;
+ if(!confirm("确定删除 "+e.date+" 选项 "+((e.choiceIndex??0)+1)+" 的练习吗？"))return;
+ entries=entries.filter(v=>v.id!==x);saveStore();renderOptions();renderHistory();updateStats();toast("已删除")
+}
+window.copyEntry=async function(x){
+ let e=entries.find(v=>v.id===x);if(!e)return;
+ try{await navigator.clipboard.writeText(e.content);toast("片段已复制")}catch{alert("复制失败，可以手动复制。")}
+}
+
+$("save").onclick=saveToday;
+$("clearDraft").onclick=()=>{if($("draft").value.trim()&&confirm("确定清空当前编辑区吗？历史不会被删除。")){$("draft").value="";updateStats()}};
+$("loadToday").onclick=()=>{
+ let e=entries.find(v=>v.key===keyOf(DAY,selected));
+ if(!e){toast("当前选项还没有保存过");return}
+ $("draft").value=e.content;updateStats();toast("已载入当前选项记录")
+};
+$("copyPrompt").onclick=async()=>{
+ let t=savePromptText();
+ try{await navigator.clipboard.writeText(t);toast("题目已复制")}catch{alert(t)}
+};
+$("draft").oninput=updateStats;
+$("search").oninput=renderHistory;
+$("sort").onchange=renderHistory;
+$("export").onclick=()=>{
+ let blob=new Blob([JSON.stringify({app:"每日小说场景素材练习-三选一版",version:2,entries},null,2)],{type:"application/json"});
+ let u=URL.createObjectURL(blob),a=document.createElement("a");
+ a.href=u;a.download="小说场景练习-三选一-"+DAY+".json";a.click();URL.revokeObjectURL(u)
+};
+$("importBtn").onclick=()=>$("importFile").click();
+$("importFile").onchange=async ev=>{
+ let f=ev.target.files[0];if(!f)return;
+ try{
+  let j=JSON.parse(await f.text()),arr=Array.isArray(j)?j:j.entries;
+  if(!Array.isArray(arr))throw 0;
+  let map=new Map(entries.map(e=>[e.key||`${e.date}_${e.choiceIndex||0}`,e]));
+  arr.forEach(e=>{
+    if(e.content){
+      let ci=e.choiceIndex??0, d=e.date||DAY, k=e.key||`${d}_${ci}`;
+      map.set(k,{id:e.id||id(),key:k,date:d,choiceIndex:ci,prompt:e.prompt||promptOf(d,ci),content:String(e.content),charCount:e.charCount||charCount(e.content),sentenceCount:e.sentenceCount||sentCount(e.content),createdAt:e.createdAt||new Date().toISOString(),updatedAt:e.updatedAt||new Date().toISOString()})
+    }
+  });
+  entries=[...map.values()];saveStore();renderOptions();renderHistory();updateStats();toast("导入成功")
+ }catch{alert("导入失败：文件格式不对。")}
+ ev.target.value=""
+};
+$("clearAll").onclick=()=>{
+ if(entries.length&&confirm("确定清空全部练习记录吗？这个操作不能撤回。")){
+  entries=[];saveStore();renderOptions();renderHistory();updateStats();$("study").classList.remove("show");toast("已清空")
+ }
+};
+
+renderOptions();
+renderPrompt();
+let firstSaved=entries.find(e=>e.key===keyOf(DAY,selected));
+if(firstSaved)$("draft").value=firstSaved.content;
+renderHistory();
+updateStats();
+</script>
+</body>
+</html>
