@@ -37,16 +37,19 @@ button:active{transform:translateY(1px)}
 .ghost{background:#fff9;border:1px solid var(--line);color:#4d372c}
 .danger{background:#fff1f2;color:var(--danger)}
 .hint{margin:10px 0 0;color:var(--muted);font-size:12px;line-height:1.7}
+.checks{display:flex;gap:8px;flex-wrap:wrap}
+.checks label{display:inline-flex;align-items:center;gap:6px;margin:0;padding:8px 10px;border:1px solid var(--line);border-radius:999px;background:#fffaf5;color:#4d372c;font-size:13px;font-weight:850;cursor:pointer}
+.checks input{width:auto;margin:0;accent-color:var(--main)}
 .preview{display:none;margin-top:10px;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#fffaf5}
 .preview.show{display:block}
 .preview img{display:block;width:100%;max-height:250px;object-fit:cover}
 .preview-actions{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 10px;color:var(--muted);font-size:12px}
-.random-result{display:none;margin-top:14px;padding:16px;border-radius:20px;background:#fffaf5;border:1px solid var(--line)}
+.random-controls{display:grid;grid-template-columns:1fr 1fr 1.4fr 140px;gap:10px;align-items:end}.random-result{display:none;margin-top:14px;padding:16px;border-radius:20px;background:#fffaf5;border:1px solid var(--line)}
 .random-result.show{display:block}
 .random-result img{width:100%;max-height:260px;object-fit:cover;border-radius:16px;margin-bottom:12px}
 .random-name{font-size:26px;font-weight:950;letter-spacing:-.04em;margin-bottom:6px}
 .random-meta{color:var(--muted);line-height:1.7;font-size:14px}
-.tools{display:grid;grid-template-columns:1fr 115px 115px 130px;gap:10px;margin:14px 0}
+.tools{display:grid;grid-template-columns:1fr 145px 115px 115px 130px;gap:10px;margin:14px 0}
 .records{display:grid;gap:12px}
 .item{display:grid;grid-template-columns:150px 1fr;gap:14px;padding:15px;border-radius:18px;background:#fff9;border:1px solid var(--line)}
 .photo{width:150px;height:150px;border-radius:16px;overflow:hidden;background:#fff1e6;border:1px solid var(--line);display:grid;place-items:center;color:#b45309;font-size:32px}
@@ -63,7 +66,7 @@ button:active{transform:translateY(1px)}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(18px);opacity:0;background:#24150fee;color:white;border-radius:999px;padding:11px 15px;transition:.18s;pointer-events:none;z-index:10}
 .toast.show{opacity:1;transform:translateX(-50%)}
 @media(max-width:930px){.grid{grid-template-columns:1fr}.form-card{position:static}}
-@media(max-width:700px){.two,.tools{grid-template-columns:1fr}.item{grid-template-columns:1fr}.photo{width:100%;height:220px}.item-top{flex-direction:column}}
+@media(max-width:700px){.two,.tools,.random-controls{grid-template-columns:1fr}.item{grid-template-columns:1fr}.photo{width:100%;height:220px}.item-top{flex-direction:column}}
 </style>
 </head>
 <body>
@@ -71,7 +74,7 @@ button:active{transform:translateY(1px)}
 <header>
   <div>
     <h1>每食记</h1>
-    <p class="sub">记录每一顿好吃的。纠结吃啥时，点一下“今天吃什么”。</p>
+    <p class="sub">记录每一顿吃过的、地点、价格、评价和照片。纠结吃啥时，点一下“今天吃什么”。</p>
   </div>
   <div class="badge">本地保存 · 地点筛选 · 可加照片</div>
 </header>
@@ -90,10 +93,13 @@ button:active{transform:translateY(1px)}
     <select id="category"><option>正餐</option><option>小吃</option><option>甜品</option><option>自制</option></select>
   </div>
   <div>
-    <label for="mood">喜欢程度</label>
-    <select id="mood"><option>★★★★★</option><option>★★★★☆</option><option>★★★☆☆</option><option>★★☆☆☆</option><option>★☆☆☆☆</option></select>
+    <label for="price">价格（元）</label>
+    <input id="price" type="number" min="0" step="0.01" placeholder="例如：18">
   </div>
 </div>
+
+<label for="mood">喜欢程度</label>
+<select id="mood"><option>好吃</option><option>能吃</option><option>避雷</option></select>
 
 <label for="date">日期</label>
 <input id="date" type="date" required>
@@ -132,11 +138,23 @@ button:active{transform:translateY(1px)}
 <section>
 <div class="card random-card">
 <h2>今天吃什么？</h2>
-<p class="sub">从你以前记录过的美食里随机抽一个，也可以按分类抽。</p>
-<div class="two">
+<p class="sub">从你以前记录过的美食里随机抽一个，也可以按地点和分类抽。</p>
+<div class="random-controls">
+  <div>
+    <label for="randomLocation">随机地点</label>
+    <select id="randomLocation"><option>全部地点</option><option>学校</option><option>市区</option></select>
+  </div>
   <div>
     <label for="randomCategory">随机分类</label>
-    <select id="randomCategory"><option>全部</option><option>正餐</option><option>小吃</option><option>甜品</option><option>自制</option></select>
+    <select id="randomCategory"><option>全部分类</option><option>正餐</option><option>小吃</option><option>甜品</option><option>自制</option></select>
+  </div>
+  <div>
+    <label>美食程度</label>
+    <div class="checks" id="randomMoodFilter">
+      <label><input type="checkbox" value="好吃">好吃</label>
+      <label><input type="checkbox" value="能吃">能吃</label>
+      <label><input type="checkbox" value="避雷">避雷</label>
+    </div>
   </div>
   <div>
     <label>&nbsp;</label>
@@ -150,9 +168,15 @@ button:active{transform:translateY(1px)}
 <h2>美食记录</h2>
 <div class="tools">
   <input id="search" placeholder="搜索美食、地点、备注">
+  <input id="filterDate" type="date" title="按日期查找">
   <select id="filterLocation"><option>全部地点</option><option>学校</option><option>市区</option></select>
   <select id="filterCategory"><option>全部分类</option><option>正餐</option><option>小吃</option><option>甜品</option><option>自制</option></select>
   <select id="sort"><option value="new">日期：新到旧</option><option value="old">日期：旧到新</option><option value="name">名称排序</option><option value="category">分类排序</option></select>
+</div>
+<div class="checks" id="listMoodFilter" style="margin:-4px 0 14px">
+  <label><input type="checkbox" value="好吃">好吃</label>
+  <label><input type="checkbox" value="能吃">能吃</label>
+  <label><input type="checkbox" value="避雷">避雷</label>
 </div>
 <div class="records" id="records"></div>
 <div class="foot">
@@ -182,8 +206,10 @@ function esc(s){return String(s||"").replace(/[&<>'"]/g,m=>({"&":"&amp;","<":"&l
 function toast(t){$("toast").textContent=t;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),1400)}
 function saveRecords(){localStorage.setItem(KEY,JSON.stringify(records))}
 function normalizeCategory(c){if(["正餐","小吃","甜品","自制"].includes(c))return c;if(["早餐","午餐","晚餐","夜宵","外卖"].includes(c))return "正餐";if(["饮品","零食","水果"].includes(c))return "小吃";return c||"正餐"}
+function normalizeMood(m){if(["好吃","能吃","避雷"].includes(m))return m;if(["★★★★★","★★★★☆"].includes(m))return "好吃";if(["★★★☆☆"].includes(m))return "能吃";if(["★★☆☆☆","★☆☆☆☆"].includes(m))return "避雷";return m||"能吃"}
+function selectedMoods(id){return [...document.querySelectorAll(`#${id} input:checked`)].map(x=>x.value)}
 function guessLocationType(t){return /校|食堂|宿舍|学院|图书馆|实验室|校园/.test(t||"")?"学校":"市区"}
-function normalizeRecord(r){r={...r};r.category=normalizeCategory(r.category);r.locationType=r.locationType||guessLocationType(r.place||r.locationDetail||"");r.locationDetail=r.locationDetail||r.place||"";r.photoData=r.photoData||"";return r}
+function normalizeRecord(r){r={...r};r.category=normalizeCategory(r.category);r.locationType=r.locationType||guessLocationType(r.place||r.locationDetail||"");r.locationDetail=r.locationDetail||r.place||"";r.photoData=r.photoData||"";r.price=r.price!==undefined&&r.price!==null?r.price:"";r.mood=normalizeMood(r.mood);return r}
 function loadRecords(){
   try{
     const now=JSON.parse(localStorage.getItem(KEY));
@@ -197,6 +223,7 @@ function loadRecords(){
 }
 function locationText(r){const type=r.locationType||guessLocationType(r.place||r.locationDetail||"");const detail=r.locationDetail||r.place||"";return detail?`${type} · ${detail}`:type}
 function dateValue(r){return new Date(`${r.date}T00:00`).getTime()}
+function priceText(r){return r.price!==undefined&&r.price!==null&&r.price!==""?`¥${Number(r.price).toFixed(2)}`:"未记录价格"}
 
 function setPhoto(data){
   photoData=data||"";
@@ -253,7 +280,7 @@ function resetForm(){
   $("foodForm").reset();
   $("date").value=todayISO();
   $("category").value="正餐";
-  $("mood").value="★★★★★";
+  $("mood").value="好吃";
   $("locationType").value="学校";
   $("formTitle").textContent="添加美食";
   setPhoto("");
@@ -261,14 +288,19 @@ function resetForm(){
 
 function filteredRecords(){
   const q=$("search").value.trim().toLowerCase();
+  const date=$("filterDate").value;
   const cat=$("filterCategory").value;
   const loc=$("filterLocation").value;
+  const moods=selectedMoods("listMoodFilter");
   let arr=records.filter(r=>{
-    const text=`${r.name} ${r.category} ${locationText(r)} ${r.note}`.toLowerCase();
+    const mood=normalizeMood(r.mood);
+    const text=`${r.name} ${r.category} ${locationText(r)} ${r.price||""} ${mood} ${r.note}`.toLowerCase();
     const okSearch=text.includes(q);
+    const okDate=!date||r.date===date;
     const okCat=cat==="全部分类"||r.category===cat;
     const okLoc=loc==="全部地点"||(r.locationType||guessLocationType(r.place||r.locationDetail||""))===loc;
-    return okSearch&&okCat&&okLoc;
+    const okMood=!moods.length||moods.includes(mood);
+    return okSearch&&okDate&&okCat&&okLoc&&okMood;
   });
   const s=$("sort").value;
   arr.sort((a,b)=>s==="new"?dateValue(b)-dateValue(a):s==="old"?dateValue(a)-dateValue(b):s==="name"?a.name.localeCompare(b.name,"zh-CN"):a.category.localeCompare(b.category,"zh-CN"));
@@ -278,7 +310,7 @@ function filteredRecords(){
 function render(){
   const arr=filteredRecords();
   if(!arr.length){
-    $("records").innerHTML='<div class="empty">还没有美食记录。<br>先在左边添加一条，之后就可以随机抽“今天吃什么”了。</div>';
+    $("records").innerHTML='<div class="empty">没有找到符合条件的美食记录。<br>可以换个关键词、日期或分类试试。</div>';
     return;
   }
   $("records").innerHTML=arr.map(r=>`
@@ -288,7 +320,7 @@ function render(){
         <div class="item-top">
           <div>
             <div class="food-name">${esc(r.name)}</div>
-            <div class="meta">${esc(r.date)} · ${esc(locationText(r)||"未填写地点")} · ${esc(r.mood||"")}</div>
+            <div class="meta">${esc(r.date)} · ${esc(locationText(r)||"未填写地点")} · ${esc(priceText(r))} · ${esc(normalizeMood(r.mood))}</div>
           </div>
           <div class="cat">🍽️ ${esc(r.category)}</div>
         </div>
@@ -308,7 +340,8 @@ $("foodForm").addEventListener("submit",e=>{
     id:$("editId").value||id(),
     name:$("foodName").value.trim(),
     category:$("category").value,
-    mood:$("mood").value,
+    price:$("price").value===""?"":Number($("price").value),
+    mood:normalizeMood($("mood").value),
     date:$("date").value,
     locationType:$("locationType").value,
     locationDetail:$("locationDetail").value.trim(),
@@ -328,7 +361,8 @@ window.editRecord=function(rid){
   $("editId").value=r.id;
   $("foodName").value=r.name;
   $("category").value=normalizeCategory(r.category);
-  $("mood").value=r.mood||"★★★★★";
+  $("price").value=r.price!==undefined&&r.price!==null?r.price:"";
+  $("mood").value=normalizeMood(r.mood);
   $("date").value=r.date;
   $("locationType").value=r.locationType||guessLocationType(r.place||r.locationDetail||"");
   $("locationDetail").value=r.locationDetail||r.place||"";
@@ -346,16 +380,26 @@ window.deleteRecord=function(rid){
 
 $("resetBtn").onclick=resetForm;
 $("search").oninput=render;
+$("filterDate").onchange=render;
 $("filterLocation").onchange=render;
 $("filterCategory").onchange=render;
 $("sort").onchange=render;
+document.querySelectorAll("#listMoodFilter input").forEach(x=>x.onchange=render);
 
 $("randomBtn").onclick=()=>{
+  const loc=$("randomLocation").value;
   const cat=$("randomCategory").value;
-  let pool=records.filter(r=>cat==="全部"||r.category===cat);
+  const moods=selectedMoods("randomMoodFilter");
+  let pool=records.filter(r=>{
+    const mood=normalizeMood(r.mood);
+    const okLoc=loc==="全部地点"||(r.locationType||guessLocationType(r.place||r.locationDetail||""))===loc;
+    const okCat=cat==="全部分类"||r.category===cat;
+    const okMood=!moods.length||moods.includes(mood);
+    return okLoc&&okCat&&okMood;
+  });
   if(!pool.length){
     $("randomResult").classList.add("show");
-    $("randomResult").innerHTML='<div class="random-name">还抽不出来</div><div class="random-meta">这个分类里还没有记录过美食。先添加几条再来抽。</div>';
+    $("randomResult").innerHTML='<div class="random-name">还抽不出来</div><div class="random-meta">这个地点、分类和美食程度组合里还没有记录。换个条件，或者先添加几条再来抽。</div>';
     return;
   }
   const byName=new Map();
@@ -366,7 +410,7 @@ $("randomBtn").onclick=()=>{
     ${pick.photoData?`<img src="${pick.photoData}" alt="${esc(pick.name)}">`:""}
     <div class="random-name">今天吃：${esc(pick.name)}</div>
     <div class="random-meta">
-      分类：${esc(pick.category)} · 喜欢程度：${esc(pick.mood||"")}<br>
+      分类：${esc(pick.category)} · 价格：${esc(priceText(pick))} · 喜欢程度：${esc(normalizeMood(pick.mood))}<br>
       上次记录：${esc(pick.date)} ${locationText(pick)?`· ${esc(locationText(pick))}`:""}<br>
       ${pick.note?`备注：${esc(pick.note)}`:""}
     </div>`;
@@ -391,7 +435,8 @@ $("importFile").onchange=async ev=>{
           id:rid,
           name:String(r.name),
           category:r.category||"正餐",
-          mood:r.mood||"★★★★★",
+          price:r.price!==undefined&&r.price!==null?r.price:"",
+          mood:normalizeMood(r.mood||"能吃"),
           date:r.date||todayISO(),
           locationType:r.locationType||guessLocationType(r.place||r.locationDetail||""),
           locationDetail:r.locationDetail||r.place||"",
